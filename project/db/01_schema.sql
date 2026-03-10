@@ -11,7 +11,7 @@ CREATE TABLE channels (
   id SERIAL PRIMARY KEY,
   name TEXT NOT NULL UNIQUE,
   description TEXT,
-  created_by TEXT REFERENCES users(display_name),
+  created_by INTEGER REFERENCES users(id),
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 

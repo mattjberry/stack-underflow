@@ -1,6 +1,6 @@
 -- =============================================================
 -- Seed Data
--- Runs automatically after )1_schema.sql on first container start
+-- Runs automatically after 01_schema.sql on first container start
 -- =============================================================
 
 -- -------------------------------------------------------------
