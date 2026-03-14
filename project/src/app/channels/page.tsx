@@ -29,7 +29,7 @@ export default function ChannelsPage() {
     fetchChannels();
   }, []);
 
-  function handleCreateSubmit(e: React.FormEvent) {
+  function handleCreateSubmit(e: React.SubmitEvent) {
     e.preventDefault();
     // POST wired up in a later step
     console.log("Submit:", formName, formDescription);
