@@ -1,7 +1,7 @@
 // List all channels and create new
 import { Channel } from "@/types/types"
 import pool from "@/lib/db"
-import { NextResponse } from "next/server.js";
+import { NextResponse } from "next/server";
 
 // GET all
 // Returns all channels as a Channel type
