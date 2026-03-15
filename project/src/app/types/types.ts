@@ -7,3 +7,15 @@ export type Channel = {
     created_at: Date;
     post_count: number;
 };
+
+// individual posts
+export type Post = {
+  id: number;
+  channel_id: number;
+  author_id: number;
+  author_name: string;
+  title: string;
+  body: string;
+  created_at: Date;
+  reply_count: number;
+};
