@@ -1,0 +1,105 @@
+/* CSS Styling for both list of channels and list of posts */
+
+.container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+}
+
+.title {
+  font-size: 2rem;
+  font-weight: bold;
+}
+
+.button {
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+}
+
+/* Create form */
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1rem;
+  border: 1px solid #ccc;
+  margin-bottom: 1.5rem;
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.formGroup label {
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.formGroup input,
+.formGroup textarea {
+  padding: 0.5rem;
+  font-size: 1rem;
+  border: 1px solid #ccc;
+}
+
+/* Search */
+.search {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.search input {
+  flex: 1;
+  padding: 0.5rem;
+  font-size: 1rem;
+  border: 1px solid #ccc;
+}
+
+/* List */
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  list-style: none;
+  padding: 0;
+}
+
+.card {
+  padding: 1rem;
+  border: 1px solid #ccc;
+}
+
+.cardTitle {
+  font-size: 1.4rem;
+  font-weight: bold;
+  margin: 0 0 0.25rem 0;
+}
+
+.cardDescription {
+  color: #555;
+  margin: 0 0 0.5rem 0;
+}
+
+.cardMeta {
+  font-size: 0.85rem;
+  color: #888;
+}
+
+.empty {
+  color: #888;
+  font-style: italic;
+}
+
+.error {
+  color: red;
+}
