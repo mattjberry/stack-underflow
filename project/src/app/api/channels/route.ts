@@ -29,9 +29,41 @@ export async function GET(request: Request) {
 // POST new channel
 export async function POST(request: Request) {
     try {
-        const result = await pool.query("")
-    } catch (error) {
-        console.error(error);
-        // add status code
+    const body = await request.json();
+    const { name, description } = body;
+
+    // Basic validation
+    if (!name || typeof name !== "string" || name.trim() === "") {
+      return NextResponse.json(
+        { error: "Channel name is required" },
+        { status: 400 }
+      );
     }
+
+    // TODO: replace with real user id from auth session
+    const createdBy = 1;
+
+    const result = await pool.query<Channel>(
+      `INSERT INTO channels (name, description, created_by)
+       VALUES ($1, $2, $3)
+       RETURNING *`,
+      [name.trim(), description?.trim() || null, createdBy]
+    );
+
+    return NextResponse.json(result.rows[0], { status: 201 });
+
+  } catch (error: any) {
+    // Postgres unique violation code
+    if (error.code === "23505") {
+      return NextResponse.json(
+        { error: "A channel with that name already exists" },
+        { status: 409 }
+      );
+    }
+    console.error(error);
+    return NextResponse.json(
+      { error: "Failed to create channel" },
+      { status: 500 }
+    );
+  }
 }
