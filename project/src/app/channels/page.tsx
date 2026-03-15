@@ -29,11 +29,34 @@ export default function ChannelsPage() {
     fetchChannels();
   }, []);
 
-  function handleCreateSubmit(e: React.SubmitEvent) {
-    e.preventDefault();
-    // POST wired up in a later step
-    console.log("Submit:", formName, formDescription);
+
+  // Handler for new channel creation form submit
+  async function handleCreateSubmit(e: React.SubmitEvent) {
+  e.preventDefault();
+  try {
+    const res = await fetch("/api/channels", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name: formName, description: formDescription }),
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      setError(data.error);
+      return;
+    }
+
+    // Add new channel to list and reset form
+    setChannels((prev) => [data, ...prev]);
+    setFormName("");
+    setFormDescription("");
+    setShowForm(false);
+
+  } catch (err) {
+    setError("Failed to create channel. Please try again.");
   }
+}
 
   if (loading) return <p>Loading channels...</p>;
   if (error) return <p>{error}</p>;
