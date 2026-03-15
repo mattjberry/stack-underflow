@@ -4,6 +4,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Channel } from "@/types/types";
+import styles from "./channels.module.css";
 
 export default function ChannelsPage() {
   const [channels, setChannels] = useState<Channel[]>([]);
@@ -59,21 +60,26 @@ export default function ChannelsPage() {
 }
 
   if (loading) return <p>Loading channels...</p>;
-  if (error) return <p>{error}</p>;
+  if (error) return <p className={styles.error}>{error}</p>;
 
   return (
-    <div>
-      <h1>Channels</h1>
+    <div className={styles.container}>
+      <h1 className={styles.header}>Channels</h1>
+
+      <hr></hr>
+      <br></br>
 
       {/* Create new button */}
-      <button onClick={() => setShowForm(!showForm)}>
+      <button className={styles.button} onClick={() => setShowForm(!showForm)}>
         {showForm ? "Cancel" : "+ Create New Channel"}
       </button>
 
+      <br></br>
+
       {/* Inline create form */}
       {showForm && (
-        <form onSubmit={handleCreateSubmit}>
-          <div>
+        <form onSubmit={handleCreateSubmit} className={styles.form}>
+          <div className={styles.formGroup}>
             <label htmlFor="name">Channel Name</label>
             <input
               id="name"
@@ -84,7 +90,7 @@ export default function ChannelsPage() {
               required
             />
           </div>
-          <div>
+          <div className={styles.formGroup}>
             <label htmlFor="description">Description</label>
             <input
               id="description"
@@ -94,28 +100,32 @@ export default function ChannelsPage() {
               placeholder="What is this channel about?"
             />
           </div>
-          <button type="submit">Create Channel</button>
+          <button type="submit" className={styles.button}>Create Channel</button>
         </form>
       )}
 
+      <br></br>
+
       {/* Search bar, wired up later */}
-      <div>
+      <div className={styles.search}>
         <input type="text" placeholder="Search channels..." disabled />
-        <button disabled>Search</button>
+        <button disabled className={styles.button}>Search</button>
       </div>
+
+      <hr></hr>
 
       {/* Empty state */}
       {channels.length === 0 ? (
-        <p>No channels found. Be the first to create one!</p>
+        <p className={styles.empty}>No channels found. Be the first to create one!</p>
       ) : (
-        <ul>
+        <ul className={styles.list}>
           {channels.map((channel) => (
-            <li key={channel.id}>
+            <li key={channel.id} className={styles.card}>
               <Link href={`/channels/${channel.name}`}>
-                <h2>{channel.name}</h2>
+                <h2 className={styles.cardTitle}>{channel.name}</h2>
               </Link>
-              <p>{channel.description}</p>
-              <p>
+              <p className={styles.cardDescription}>{channel.description}</p>
+              <p className={styles.cardMeta}>
                 Created on {new Date(channel.created_at).toLocaleDateString()}
               </p>
               <p>{channel.post_count} posts</p>
