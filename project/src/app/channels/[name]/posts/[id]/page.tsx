@@ -4,7 +4,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { Post, Reply } from "@/types/types";
-import styles from "@/app/channels/channels.module.css";
+import styles from "@/channels/channels.module.css";
 
 type PostDetail = Post & { replies: Reply[] };
 
