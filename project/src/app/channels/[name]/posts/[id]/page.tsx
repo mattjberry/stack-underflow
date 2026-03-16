@@ -34,12 +34,12 @@ export default function PostPage() {
     fetchPost();
   }, [name, id]);
 
-  async function handleReplySubmit(e: React.FormEvent, parentReplyId: number | null) {
+  async function handleReplySubmit(e: React.SubmitEvent, parentReplyId: number | null) {
     e.preventDefault();
     if (!replyBody.trim()) return;
 
     try {
-      const res = await fetch(`/api/channels/${name}/posts/${id}/replies`, {
+      const res = await fetch(`/api/channels/${name}/posts/${id}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ body: replyBody, parent_reply_id: parentReplyId }),
