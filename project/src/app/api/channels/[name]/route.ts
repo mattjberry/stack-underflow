@@ -5,10 +5,10 @@ import { Post } from "@/types/types";
 // GET all posts for a channel
 export async function GET(
   request: Request,
-  { params }: { params: { name: string } }
+  { params }: { params: Promise<{ name: string }> }
 ) {
   try {
-    const { name } = params;
+    const { name } = await params;
 
     // First confirm channel exists
     const channel = await pool.query(
@@ -53,10 +53,10 @@ export async function GET(
 // POST new post in a channel
 export async function POST(
   request: Request,
-  { params }: { params: { name: string } }
+  { params }: { params: Promise<{ name: string }> }
 ) {
   try {
-    const { name } = params;
+    const { name } = await params;
     const body = await request.json();
     const { title, content } = body;
 
