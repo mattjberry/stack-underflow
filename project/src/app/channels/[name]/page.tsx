@@ -126,8 +126,10 @@ export default function ChannelPage() {
               <p className={styles.cardDescription}>{post.body}</p>
               <p className={styles.cardMeta}>
                 Posted by {post.author_name} on{" "}
-                {new Date(post.created_at).toLocaleDateString()} ·{" "}
-                {post.reply_count} replies
+                {new Date(post.created_at).toLocaleDateString()} on{" "}
+                {post.reply_count} replies on{" "}
+                {post.vote_score > 0 ? `+${post.vote_score}` : post.vote_score}
+                {/* above statement display post count, adding an explicit + for positive result. Negative have a - by default */}
               </p>
             </li>
           ))}

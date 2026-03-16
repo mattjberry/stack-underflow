@@ -30,9 +30,12 @@ export async function GET(
         posts.*,
         users.display_name AS author_name,
         COUNT(replies.id)::int AS reply_count
+        COALESCE(SUM(votes.value), 0)::int AS vote_score
        FROM posts
        LEFT JOIN users ON users.id = posts.author_id
        LEFT JOIN replies ON replies.post_id = posts.id
+       LEFT JOIN votes on votes.target_id = posts.id
+          and votes.target_type = 'post'
        WHERE posts.channel_id = $1
        GROUP BY posts.id, users.display_name
        ORDER BY posts.created_at DESC`,
