@@ -29,7 +29,7 @@ export async function GET(
       `SELECT
         posts.*,
         users.display_name AS author_name,
-        COUNT(replies.id)::int AS reply_count
+        COUNT(replies.id)::int AS reply_count,
         COALESCE(SUM(votes.value), 0)::int AS vote_score
        FROM posts
        LEFT JOIN users ON users.id = posts.author_id
