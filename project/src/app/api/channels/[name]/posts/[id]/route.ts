@@ -2,6 +2,10 @@
 import { NextResponse } from "next/server";
 import pool from "@/lib/db";
 import { Post, Reply } from "@/types/types";
+import { validateFile, ALLOWED_MIME_TYPES, UPLOAD_DIR } from "@/lib/uploads";
+import { writeFile, mkdir } from "fs/promises";
+import { randomUUID } from "crypto";
+import path from "path";
 
 // Type used only here for a Post, its votes, and a list of Replies
 type PostDetail = Post & {
@@ -76,24 +80,35 @@ export async function POST(
   { params }: { params: Promise<{ name: string; id: string }> }
 ) {
   try {
-    // post_id comes directly from the URL param [id]
     const { id: postId } = await params;
-    const body = await request.json();
 
-    // Replies have body not title/content
-    // parent_reply_id comes from the request body — null if replying to the post
-    const { body: replyBody, parent_reply_id } = body;
+    // Switch from request.json() to formData to support file uploads
+    const formData = await request.formData();
+    const replyBody = formData.get("body") as string;
+    const parentReplyId = formData.get("parent_reply_id");
+    const file = formData.get("attachment") as File | null;
 
-    if (!replyBody || typeof replyBody !== "string" || replyBody.trim() === "") {
+    if (!replyBody || replyBody.trim() === "") {
       return NextResponse.json(
         { error: "Reply body is required" },
         { status: 400 }
       );
     }
 
+    // Validate file if provided
+    if (file && file.size > 0) {
+      const validationError = validateFile(file);
+      if (validationError) {
+        return NextResponse.json(
+          { error: validationError },
+          { status: 400 }
+        );
+      }
+    }
+
     // Confirm post exists
     const post = await pool.query(
-      `SELECT id FROM posts WHERE id = $1`,  // query posts not channels
+      `SELECT id FROM posts WHERE id = $1`,
       [postId]
     );
 
@@ -104,11 +119,14 @@ export async function POST(
       );
     }
 
-    // If a parent_reply_id was provided, confirm that reply actually exists
-    if (parent_reply_id !== null && parent_reply_id !== undefined) {
+    // Parse parent_reply_id — null if replying to post, number if replying to reply
+    const parsedParentId = parentReplyId ? parseInt(parentReplyId as string) : null;
+
+    // If a parent_reply_id was provided, confirm that reply exists
+    if (parsedParentId !== null) {
       const parentReply = await pool.query(
         `SELECT id FROM replies WHERE id = $1`,
-        [parent_reply_id]
+        [parsedParentId]
       );
       if (parentReply.rows.length === 0) {
         return NextResponse.json(
@@ -125,15 +143,29 @@ export async function POST(
       `INSERT INTO replies (post_id, parent_reply_id, author_id, body)
        VALUES ($1, $2, $3, $4)
        RETURNING *`,
-      [
-        postId,
-        parent_reply_id ?? null,  // null = top level reply to post
-        authorId,
-        replyBody.trim()
-      ]
+      [postId, parsedParentId, authorId, replyBody.trim()]
     );
 
-    return NextResponse.json(result.rows[0], { status: 201 });
+    const reply = result.rows[0];
+
+    // Handle file upload if present
+    if (file && file.size > 0) {
+      const ext = ALLOWED_MIME_TYPES[file.type];
+      const fileName = `${randomUUID()}${ext}`;
+      const filePath = path.join(UPLOAD_DIR, fileName);
+
+      await mkdir(UPLOAD_DIR, { recursive: true });
+      const buffer = Buffer.from(await file.arrayBuffer());
+      await writeFile(filePath, buffer);
+
+      await pool.query(
+        `INSERT INTO attachments (target_type, target_id, mime_type, size_bytes, file_path)
+         VALUES ($1, $2, $3, $4, $5)`,
+        ["reply", reply.id, file.type, file.size, fileName]
+      );
+    }
+
+    return NextResponse.json(reply, { status: 201 });
 
   } catch (error) {
     console.error(error);

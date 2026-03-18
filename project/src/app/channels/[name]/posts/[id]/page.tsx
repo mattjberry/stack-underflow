@@ -13,6 +13,7 @@ export default function PostPage() {
   const [post, setPost] = useState<PostDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [replyFile, setReplyFile] = useState<File | null>(null);
 
   // Track which reply form is open by id, null = post reply form
   const [replyingTo, setReplyingTo] = useState<number | null | undefined>(undefined);
@@ -34,72 +35,97 @@ export default function PostPage() {
     fetchPost();
   }, [name, id]);
 
-  async function handleReplySubmit(e: React.SubmitEvent, parentReplyId: number | null) {
-    e.preventDefault();
-    if (!replyBody.trim()) return;
+async function handleReplySubmit(e: React.SubmitEvent, parentReplyId: number | null) {
+  e.preventDefault();
+  if (!replyBody.trim()) return;
 
-    try {
-      const res = await fetch(`/api/channels/${name}/posts/${id}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ body: replyBody, parent_reply_id: parentReplyId }),
-      });
+  try {
+    const formData = new FormData();
+    formData.append("body", replyBody);
+    formData.append("parent_reply_id", parentReplyId?.toString() ?? "");
+    if (replyFile) formData.append("attachment", replyFile);
 
-      const data = await res.json();
-      if (!res.ok) {
-        setError(data.error);
-        return;
-      }
+    const res = await fetch(`/api/channels/${name}/posts/${id}`, {
+      method: "POST",
+      // No Content-Type header — let browser set it for FormData
+      body: formData,
+    });
 
-      // Append new reply and reset form
-      setPost((prev) =>
-        prev ? { ...prev, replies: [...prev.replies, data] } : prev
-      );
-      setReplyBody("");
-      setReplyingTo(undefined);
-
-    } catch (err) {
-      setError("Failed to post reply. Please try again.");
+    const data = await res.json();
+    if (!res.ok) {
+      setError(data.error);
+      return;
     }
+
+    setPost((prev) =>
+      prev ? { ...prev, replies: [...prev.replies, data] } : prev
+    );
+    setReplyBody("");
+    setReplyFile(null);
+    setReplyingTo(undefined);
+
+  } catch (err) {
+    setError("Failed to post reply. Please try again.");
   }
+}
 
   function formatScore(score: number) {
     if (score > 0) return `+${score}`;
     return `${score}`;
   }
 
-  function renderReplyForm(parentReplyId: number | null) {
-    return (
-      <form
-        className={styles.form}
-        onSubmit={(e) => handleReplySubmit(e, parentReplyId)}
-      >
-        <div className={styles.formGroup}>
-          <label htmlFor={`reply-${parentReplyId}`}>Your Reply</label>
-          <textarea
-            id={`reply-${parentReplyId}`}
-            rows={3}
-            value={replyBody}
-            onChange={(e) => setReplyBody(e.target.value)}
-            placeholder="Write your reply..."
-            required
-          />
-        </div>
-        <div className={styles.formActions}>
-          <button type="submit" className={styles.button}>
-            Submit Reply
-          </button>
-          <button
-            type="button"
-            className={styles.button}
-            onClick={() => { setReplyingTo(undefined); setReplyBody(""); }}
-          >
-            Cancel
-          </button>
-        </div>
-      </form>
-    );
-  }
+function renderReplyForm(parentReplyId: number | null) {
+  return (
+    <form
+      className={styles.form}
+      onSubmit={(e) => handleReplySubmit(e, parentReplyId)}
+    >
+      <div className={styles.formGroup}>
+        <label htmlFor={`reply-${parentReplyId}`}>Your Reply</label>
+        <textarea
+          id={`reply-${parentReplyId}`}
+          rows={3}
+          value={replyBody}
+          onChange={(e) => setReplyBody(e.target.value)}
+          placeholder="Write your reply..."
+          required
+        />
+      </div>
+      <div className={styles.formGroup}>
+        <label htmlFor={`attachment-${parentReplyId}`}>
+          Screenshot (optional)
+        </label>
+        <input
+          id={`attachment-${parentReplyId}`}
+          type="file"
+          accept=".png,.jpg,.jpeg,.webp"
+          onChange={(e) => setReplyFile(e.target.files?.[0] ?? null)}
+        />
+        {replyFile && (
+          <p className={styles.cardMeta}>
+            Selected: {replyFile.name} ({(replyFile.size / 1024 / 1024).toFixed(2)} MB)
+          </p>
+        )}
+      </div>
+      <div className={styles.formActions}>
+        <button type="submit" className={styles.button}>
+          Submit Reply
+        </button>
+        <button
+          type="button"
+          className={styles.button}
+          onClick={() => {
+            setReplyingTo(undefined);
+            setReplyBody("");
+            setReplyFile(null);
+          }}
+        >
+          Cancel
+        </button>
+      </div>
+    </form>
+  );
+}
 
   function renderReplies(replies: Reply[], parentId: number | null = null, depth = 0) {
     const filtered = replies.filter((r) => r.parent_reply_id === parentId);
