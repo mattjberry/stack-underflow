@@ -1,5 +1,11 @@
 // shared upload validation logic
-export const UPLOAD_DIR = "/app/uploads";
+
+import path from "path";
+
+// Uses project root when running locally, /app when running in Docker
+export const UPLOAD_DIR = process.env.NODE_ENV === "production"
+  ? "/app/uploads"
+  : path.join(process.cwd(), "uploads");
 
 export const ALLOWED_MIME_TYPES: Record<string, string> = {
   "image/png": ".png",
