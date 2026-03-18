@@ -108,6 +108,20 @@ async function handleCreateSubmit(e: React.SubmitEvent) {
               required
             />
           </div>
+          <div className={styles.formGroup}>
+            <label htmlFor="attachment">Screenshot (optional)</label>
+            <input
+              id="attachment"
+              type="file"
+              accept=".png,.jpg,.jpeg,.webp"
+              onChange={(e) => setFormFile(e.target.files?.[0] ?? null)}
+            />
+            {formFile && (
+              <p className={styles.cardMeta}>
+                Selected: {formFile.name} ({(formFile.size / 1024 / 1024).toFixed(2)} MB)
+              </p>
+            )}
+          </div>
           <button className={styles.button} type="submit">
             Create Post
           </button>
