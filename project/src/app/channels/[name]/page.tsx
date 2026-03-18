@@ -31,31 +31,40 @@ export default function ChannelPage() {
     fetchPosts();
   }, [name]);
 
-  async function handleCreateSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    try {
-      const res = await fetch(`/api/channels/${name}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title: formTitle, content: formContent }),
-      });
 
-      const data = await res.json();
+  const [formFile, setFormFile] = useState<File | null>(null);
 
-      if (!res.ok) {
-        setError(data.error);
-        return;
-      }
+async function handleCreateSubmit(e: React.SubmitEvent) {
+  e.preventDefault();
+  try {
+    // use FormData to support file uploads
+    const formData = new FormData();
+    formData.append("title", formTitle);
+    formData.append("content", formContent);
+    if (formFile) formData.append("attachment", formFile);
 
-      setPosts((prev) => [data, ...prev]);
-      setFormTitle("");
-      setFormContent("");
-      setShowForm(false);
+    const res = await fetch(`/api/channels/${name}`, {
+      method: "POST",
+      // No Content-Type header, browser sets it automatically
+      body: formData,
+    });
 
-    } catch (err) {
-      setError("Failed to create post. Please try again.");
+    const data = await res.json();
+    if (!res.ok) {
+      setError(data.error);
+      return;
     }
+
+    setPosts((prev) => [data, ...prev]);
+    setFormTitle("");
+    setFormContent("");
+    setFormFile(null);
+    setShowForm(false);
+
+  } catch (err) {
+    setError("Failed to create post. Please try again.");
   }
+}
 
   if (loading) return <p>Loading posts...</p>;
 
