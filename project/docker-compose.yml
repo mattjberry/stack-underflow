@@ -12,6 +12,8 @@ services:
     environment:
       NODE_ENV: development
       DATABASE_URL: postgresql://admin:admin@postgres:5432/proj
+    volumes:
+      - uploads:/app/uploads
 
   postgres:
     image: postgres:16
@@ -33,3 +35,4 @@ services:
 
 volumes:
   db_data:
+  uploads:
