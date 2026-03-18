@@ -138,3 +138,14 @@
   display: flex;
   gap: 0.5rem;
 }
+
+.attachments {
+  margin-top: 0.75rem;
+}
+
+.attachmentImage {
+  max-width: 100%;
+  max-height: 400px;
+  object-fit: contain;
+  border: 1px solid #ccc;
+}

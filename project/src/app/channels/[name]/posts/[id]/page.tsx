@@ -3,10 +3,37 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import { Post, Reply } from "@/types/types";
+import { Post, Reply, Attachment } from "@/types/types";
 import styles from "@/channels/channels.module.css";
 
-type PostDetail = Post & { replies: Reply[] };
+type PostDetail = Post & {
+  replies: Reply[];
+  attachments: Attachment[];
+}
+
+function AttachmentImage({ attachments, targetType, targetId }: {
+  attachments: Attachment[];
+  targetType: string;
+  targetId: number;
+}) {
+  const matches = attachments.filter(
+    (a) => a.target_type === targetType && a.target_id === targetId
+  );
+  if (matches.length === 0) return null;
+
+  return (
+    <div className={styles.attachments}>
+      {matches.map((a) => (
+        <img
+          key={a.id}
+          src={`/api/attachments/${a.id}`}
+          alt="Attachment"
+          className={styles.attachmentImage}
+        />
+      ))}
+    </div>
+  );
+}
 
 export default function PostPage() {
   const { name, id } = useParams<{ name: string; id: string }>();
@@ -136,6 +163,11 @@ function renderReplyForm(parentReplyId: number | null) {
         {filtered.map((reply) => (
           <li key={reply.id} className={styles.card}>
             <p>{reply.body}</p>
+            <AttachmentImage
+              attachments={post!.attachments}
+              targetType="reply"
+              targetId={reply.id}
+            />
             <div className={styles.cardMeta}>
               {reply.author_name} · {new Date(reply.created_at).toLocaleDateString()}
             </div>
@@ -175,6 +207,11 @@ function renderReplyForm(parentReplyId: number | null) {
       <div className={styles.card}>
         <h1 className={styles.cardTitle}>{post.title}</h1>
         <p>{post.body}</p>
+        <AttachmentImage
+          attachments={post.attachments}
+          targetType="post"
+          targetId={post.id}
+        />
         <p className={styles.cardMeta}>
           Posted by {post.author_name} ·{" "}
           {new Date(post.created_at).toLocaleDateString()}

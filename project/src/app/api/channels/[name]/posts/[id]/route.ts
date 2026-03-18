@@ -1,7 +1,7 @@
 // app/api/channels/[name]/posts/[id]/route.ts
 import { NextResponse } from "next/server";
 import pool from "@/lib/db";
-import { Post, Reply } from "@/types/types";
+import { Post, Reply, Attachment } from "@/types/types";
 import { validateFile, ALLOWED_MIME_TYPES, UPLOAD_DIR } from "@/lib/uploads";
 import { writeFile, mkdir } from "fs/promises";
 import { randomUUID } from "crypto";
@@ -9,8 +9,8 @@ import path from "path";
 
 // Type used only here for a Post, its votes, and a list of Replies
 type PostDetail = Post & {
-  vote_score: number;
   replies: Reply[];
+  attachments: Attachment[];
 }
 
 export async function GET(
@@ -58,9 +58,20 @@ export async function GET(
       [id]
     );
 
+    // get all the attachments
+    const attachmentsResult = await pool.query(
+      `SELECT * FROM attachments 
+      WHERE (target_type = 'post' AND target_id = $1)
+      OR (target_type = 'reply' AND target_id = ANY(
+        SELECT id FROM replies WHERE post_id = $1
+      ))`,
+      [id]
+    );
+
     const response: PostDetail = {
       ...postResult.rows[0],
       replies: repliesResult.rows,
+      attachments: attachmentsResult.rows,
     };
 
     return NextResponse.json(response);
