@@ -6,6 +6,8 @@ import { useParams } from "next/navigation";
 import { Post, Reply, Attachment } from "@/types/types";
 import styles from "@/channels/channels.module.css";
 import { useSession } from "next-auth/react";
+import ConfirmDialog from "@/components/ConfirmDialog";
+import { useRouter } from "next/router";
 
 
 type PostDetail = Post & {
@@ -44,6 +46,9 @@ export default function PostPage() {
   const [error, setError] = useState<string | null>(null);
   const [replyFile, setReplyFile] = useState<File | null>(null);
   const { data: session } = useSession();
+  const [pendingDeletePost, setPendingDeletePost] = useState(false);
+  const [pendingDeleteReply, setPendingDeleteReply] = useState<Reply | null>(null);
+  const router = useRouter();
 
 
   // Track which reply form is open by id, null = post reply form
@@ -65,6 +70,58 @@ export default function PostPage() {
     }
     fetchPost();
   }, [name, id]);
+
+  // Delete post handler — navigates back to channel on success
+async function handleDeletePost() {
+  try {
+    const res = await fetch(`/api/admin/posts/${id}`, { method: "DELETE" });
+    const data = await res.json();
+    if (!res.ok) {
+      setError(data.error);
+      return;
+    }
+    router.push(`/channels/${name}`);
+  } catch (err) {
+    setError("Failed to delete post. Please try again.");
+  } finally {
+    setPendingDeletePost(false);
+  }
+}
+
+// Delete reply handler
+async function handleDeleteReply() {
+  if (!pendingDeleteReply) return;
+  try {
+    const res = await fetch(`/api/admin/replies/${pendingDeleteReply.id}`, {
+      method: "DELETE",
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      setError(data.error);
+      return;
+    }
+    // Remove reply and any nested replies from local state
+    setPost((prev) => {
+      if (!prev) return prev;
+      const removeIds = new Set<number>();
+      function collectIds(replyId: number) {
+        removeIds.add(replyId);
+        prev!.replies
+          .filter((r) => r.parent_reply_id === replyId)
+          .forEach((r) => collectIds(r.id));
+      }
+      collectIds(pendingDeleteReply.id);
+      return {
+        ...prev,
+        replies: prev.replies.filter((r) => !removeIds.has(r.id)),
+      };
+    });
+  } catch (err) {
+    setError("Failed to delete reply. Please try again.");
+  } finally {
+    setPendingDeleteReply(null);
+  }
+}
 
 async function handleReplySubmit(e: React.SubmitEvent, parentReplyId: number | null) {
   e.preventDefault();
@@ -190,12 +247,19 @@ function renderReplyForm(parentReplyId: number | null) {
               {session ? (
                 <button
                   className={styles.button}
-                  onClick={() => setReplyingTo(reply.id)}
-                >
+                  onClick={() => setReplyingTo(reply.id)}>
                   Reply
                 </button>
               ) : (
                 <p className={styles.authPrompt}>Please sign in to reply</p>
+              )}
+              {session?.user.role === "admin" && (
+                <button
+                  className={styles.deleteButton}
+                  onClick={() => setPendingDeleteReply(reply)}
+                >
+                  Delete Reply
+                </button>
               )}
             </div>
 
@@ -252,6 +316,13 @@ function renderReplyForm(parentReplyId: number | null) {
           ) : (
             <p className={styles.authPrompt}>Please sign in to reply</p>
           )}
+          {session?.user.role === "admin" && (
+            <button
+              className={styles.deleteButton}
+              onClick={() => setPendingDeletePost(true)}>
+              Delete Post
+            </button>
+          )}
         </div>
 
         {/* Reply form for main post */}
@@ -269,6 +340,24 @@ function renderReplyForm(parentReplyId: number | null) {
         </p>
       ) : (
         renderReplies(post.replies)
+      )}
+
+      {pendingDeletePost && (
+        <ConfirmDialog
+          message="Delete this post?"
+          subMessage="This will permanently delete all replies and attachments."
+          onConfirm={handleDeletePost}
+          onCancel={() => setPendingDeletePost(false)}
+        />
+      )}
+
+      {pendingDeleteReply && (
+        <ConfirmDialog
+          message="Delete this reply?"
+          subMessage="This will permanently delete any nested replies."
+          onConfirm={handleDeleteReply}
+          onCancel={() => setPendingDeleteReply(null)}
+        />
       )}
     </div>
   );
