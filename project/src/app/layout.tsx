@@ -6,6 +6,7 @@ import { SessionProvider } from "next-auth/react";
 import { redirect } from "next/dist/server/api-utils";
 import { auth } from "@/lib/auth";
 import { signOut } from "@/lib/auth";
+import Link from "next/link";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -42,6 +43,9 @@ export default async function RootLayout({
                 await signOut({ redirectTo: "/" });
               }}>
                 <span>Signed in as {session.user.name}</span>
+                {session.user.role === "admin" && (
+                  <Link href="/admin">Admin Panel</Link>
+                )}
                 <button type="submit">Sign Out</button>
               </form>
             ) : null}
