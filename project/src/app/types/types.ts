@@ -42,3 +42,11 @@ export type Attachment = {
   size_bytes: number;
   file_path: string;
 }
+
+export type AdminUser = {
+  id: number;
+  display_name: string;
+  role: string;
+  post_count: number;
+  reply_count: number;
+};
