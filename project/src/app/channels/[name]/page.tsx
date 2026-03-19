@@ -85,12 +85,6 @@ async function handleCreateSubmit(e: React.SubmitEvent) {
         ) : (
           <p className={styles.authPrompt}>Please sign in to create a post</p>
         )}
-        <button
-          className={styles.button}
-          onClick={() => setShowForm(!showForm)}
-        >
-          {showForm ? "Cancel" : "+ New Post"}
-        </button>
       </div>
 
       {error && <p className={styles.error}>{error}</p>}
