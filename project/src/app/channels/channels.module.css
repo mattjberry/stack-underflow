@@ -207,3 +207,23 @@
   opacity: 0.4;
   cursor: not-allowed;
 }
+
+/* Groups reply button and delete button side by side */
+.cardActions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.deleteButton {
+  padding: 0.3rem 0.75rem;
+  background: #cc0000;
+  color: white;
+  border: none;
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+
+.deleteButton:hover {
+  background: #aa0000;
+}
