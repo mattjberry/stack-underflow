@@ -28,6 +28,12 @@ export async function DELETE(
       return NextResponse.json({ error: "Reply not found" }, { status: 404 });
     }
 
+    // delete any associated attachment
+    await pool.query(
+      `DELETE FROM attachments WHERE target_type = 'reply' AND target_id = $1`,
+      [id]
+    );
+
     return NextResponse.json({ success: true });
 
   } catch (error) {
