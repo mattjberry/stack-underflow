@@ -176,20 +176,15 @@ function renderReplyForm(parentReplyId: number | null) {
               {reply.author_name} · {new Date(reply.created_at).toLocaleDateString()}
             </div>
             <div className={styles.cardFooter}>
-              <div className={styles.votes}>
-                <button
-                  className={styles.voteButton}
-                  disabled={!session}
-                  title={!session ? "Please sign in to vote" : "Upvote"}
-                  >👍
+              <div className={`${styles.votes} ${!session ? styles.votesLocked : ""}`}
+                   data-tooltip="Please sign in to vote">
+                <button className={styles.voteButton} disabled={!session}>
+                  👍
                 {/*TODO : Replace these icons lol */}
                 </button>
                 <span>{formatScore(reply.vote_score)}</span>
-                <button 
-                  className={styles.voteButton}
-                  disabled={!session}
-                  title={!session ? "Please sign in to vote" : "Downvote"}
-                  >👎
+                <button className={styles.voteButton} disabled={!session}>
+                  👎
                 </button>
               </div>
               {session ? (
@@ -236,19 +231,15 @@ function renderReplyForm(parentReplyId: number | null) {
           {new Date(post.created_at).toLocaleDateString()}
         </p>
         <div className={styles.cardFooter}>
-          <div className={styles.votes}>
-            <button 
-              className={styles.voteButton}
-              disabled={!session}
-              title={!session ? "Please sign in to vote" : "Upvote"}
-              >👍
+          <div className={`${styles.votes} ${!session ? styles.votesLocked : ""}`}
+               data-tooltip="Please sign in to vote">
+            <button className={styles.voteButton} disabled={!session}>
+                👍
             </button>
+            { /* TODO change these icons lol */}
             <span>{formatScore(post.vote_score)}</span>
-            <button 
-              className={styles.voteButton}
-              disabled={!session}
-              title={!session ? "Please sign in to vote" : "Downvote"}
-              >👎
+            <button className={styles.voteButton} disabled={!session}>
+                👎
             </button>
           </div>
           {session ? (
