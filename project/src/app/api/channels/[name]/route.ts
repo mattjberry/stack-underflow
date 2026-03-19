@@ -5,7 +5,7 @@ import { validateFile, ALLOWED_MIME_TYPES, UPLOAD_DIR } from "@/lib/uploads";
 import { writeFile, mkdir } from "fs/promises";
 import { randomUUID } from "crypto";
 import path from "path";
-
+import { auth } from "@/lib/auth";
 // GET all posts for a channel
 export async function GET(
   request: Request,
@@ -110,8 +110,14 @@ export async function POST(
 
     const channelId = channel.rows[0].id;
 
-    // TODO: replace with real user id from auth session
-    const authorId = 1;
+    const session = await auth();
+    if (!session) {
+      return NextResponse.json(
+        { error: "You must be signed in to do this" },
+        { status: 401 }
+      );
+    }
+    const authorId = parseInt(session.user.id);
 
     const result = await pool.query<Post>(
       `INSERT INTO posts (channel_id, author_id, title, body)

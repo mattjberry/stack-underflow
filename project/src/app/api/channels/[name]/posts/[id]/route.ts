@@ -1,4 +1,3 @@
-// app/api/channels/[name]/posts/[id]/route.ts
 import { NextResponse } from "next/server";
 import pool from "@/lib/db";
 import { Post, Reply, Attachment } from "@/types/types";
@@ -6,6 +5,7 @@ import { validateFile, ALLOWED_MIME_TYPES, UPLOAD_DIR } from "@/lib/uploads";
 import { writeFile, mkdir } from "fs/promises";
 import { randomUUID } from "crypto";
 import path from "path";
+import { auth } from "@/lib/auth";
 
 // Type used only here for a Post, its votes, and a list of Replies
 type PostDetail = Post & {
@@ -147,8 +147,14 @@ export async function POST(
       }
     }
 
-    // TODO: replace with real user id from auth session
-    const authorId = 1;
+    const session = await auth();
+    if (!session) {
+      return NextResponse.json(
+        { error: "You must be signed in to do this" },
+        { status: 401 }
+      );
+    }
+    const authorId = parseInt(session.user.id);
 
     const result = await pool.query<Reply>(
       `INSERT INTO replies (post_id, parent_reply_id, author_id, body)

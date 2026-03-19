@@ -2,6 +2,8 @@
 import { Channel } from "@/types/types"
 import pool from "@/lib/db"
 import { NextResponse } from "next/server";
+import { auth } from "@/lib/auth";
+
 
 // GET all
 // Returns all channels as a Channel type
@@ -40,8 +42,14 @@ export async function POST(request: Request) {
       );
     }
 
-    // TODO: replace with real user id from auth session
-    const createdBy = 1;
+    const session = await auth();
+    if (!session) {
+      return NextResponse.json(
+        { error: "You must be signed in to do this" },
+        { status: 401 }
+      );
+    }
+    const createdBy = parseInt(session.user.id);
 
     const result = await pool.query<Channel>(
       `INSERT INTO channels (name, description, created_by)
