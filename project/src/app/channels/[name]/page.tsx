@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import Link from "next/link";
 import { Post } from "@/types/types";
 import styles from "../channels.module.css";
+import { useSession } from "next-auth/react";
 
 export default function ChannelPage() {
   const { name } = useParams<{ name: string }>();
@@ -14,6 +15,7 @@ export default function ChannelPage() {
   const [showForm, setShowForm] = useState(false);
   const [formTitle, setFormTitle] = useState("");
   const [formContent, setFormContent] = useState("");
+  const { data: session } = useSession();
 
   useEffect(() => {
     async function fetchPosts() {
@@ -73,6 +75,16 @@ async function handleCreateSubmit(e: React.SubmitEvent) {
 
       <div className={styles.header}>
         <h1 className={styles.title}>{name}</h1>
+        {session ? (
+           <button
+            className={styles.button}
+            onClick={() => setShowForm(!showForm)}
+          >
+            {showForm ? "Cancel" : "+ New Post"}
+          </button>
+        ) : (
+          <p className={styles.authPrompt}>Please sign in to create a post</p>
+        )}
         <button
           className={styles.button}
           onClick={() => setShowForm(!showForm)}
@@ -84,7 +96,7 @@ async function handleCreateSubmit(e: React.SubmitEvent) {
       {error && <p className={styles.error}>{error}</p>}
 
       {/* Inline create form */}
-      {showForm && (
+      {session && showForm && (
         <form className={styles.form} onSubmit={handleCreateSubmit}>
           <div className={styles.formGroup}>
             <label htmlFor="title">Title</label>

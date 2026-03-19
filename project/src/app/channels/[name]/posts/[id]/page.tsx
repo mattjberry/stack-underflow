@@ -5,6 +5,8 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { Post, Reply, Attachment } from "@/types/types";
 import styles from "@/channels/channels.module.css";
+import { useSession } from "next-auth/react";
+
 
 type PostDetail = Post & {
   replies: Reply[];
@@ -41,6 +43,8 @@ export default function PostPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [replyFile, setReplyFile] = useState<File | null>(null);
+  const { data: session } = useSession();
+
 
   // Track which reply form is open by id, null = post reply form
   const [replyingTo, setReplyingTo] = useState<number | null | undefined>(undefined);
@@ -173,16 +177,31 @@ function renderReplyForm(parentReplyId: number | null) {
             </div>
             <div className={styles.cardFooter}>
               <div className={styles.votes}>
-                <button className={styles.voteButton}>👍</button>
+                <button
+                  className={styles.voteButton}
+                  disabled={!session}
+                  title={!session ? "Please sign in to vote" : "Upvote"}
+                  >👍
+                {/*TODO : Replace these icons lol */}
+                </button>
                 <span>{formatScore(reply.vote_score)}</span>
-                <button className={styles.voteButton}>👎</button>
+                <button 
+                  className={styles.voteButton}
+                  disabled={!session}
+                  title={!session ? "Please sign in to vote" : "Downvote"}
+                  >👎
+                </button>
               </div>
-              <button
-                className={styles.button}
-                onClick={() => setReplyingTo(reply.id)}
-              >
-                Reply
-              </button>
+              {session ? (
+                <button
+                  className={styles.button}
+                  onClick={() => setReplyingTo(reply.id)}
+                >
+                  Reply
+                </button>
+              ) : (
+                <p className={styles.authPrompt}>Please sign in to reply</p>
+              )}
             </div>
 
             {/* Reply form for this reply */}
@@ -218,16 +237,30 @@ function renderReplyForm(parentReplyId: number | null) {
         </p>
         <div className={styles.cardFooter}>
           <div className={styles.votes}>
-            <button className={styles.voteButton}>👍</button>
+            <button 
+              className={styles.voteButton}
+              disabled={!session}
+              title={!session ? "Please sign in to vote" : "Upvote"}
+              >👍
+            </button>
             <span>{formatScore(post.vote_score)}</span>
-            <button className={styles.voteButton}>👎</button>
+            <button 
+              className={styles.voteButton}
+              disabled={!session}
+              title={!session ? "Please sign in to vote" : "Downvote"}
+              >👎
+            </button>
           </div>
-          <button
-            className={styles.button}
-            onClick={() => setReplyingTo(null)}
-          >
-            Reply
-          </button>
+          {session ? (
+            <button
+              className={styles.button}
+              onClick={() => setReplyingTo(null)}
+            >
+              Reply
+            </button>
+          ) : (
+            <p className={styles.authPrompt}>Please sign in to reply</p>
+          )}
         </div>
 
         {/* Reply form for main post */}

@@ -5,6 +5,8 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Channel } from "@/types/types";
 import styles from "./channels.module.css";
+import { useSession } from "next-auth/react";
+
 
 export default function ChannelsPage() {
   const [channels, setChannels] = useState<Channel[]>([]);
@@ -13,6 +15,7 @@ export default function ChannelsPage() {
   const [showForm, setShowForm] = useState(false);
   const [formName, setFormName] = useState("");
   const [formDescription, setFormDescription] = useState("");
+  const { data: session } = useSession();
 
   useEffect(() => {
     async function fetchChannels() {
@@ -64,10 +67,24 @@ export default function ChannelsPage() {
 
   return (
     <div className={styles.container}>
-      <h1 className={styles.header}>Channels</h1>
+      <div className={styles.header}>
+        <h1 className={styles.title}>Channels</h1>
 
-      <hr></hr>
-      <br></br>
+        <hr></hr>
+        <br></br>
+
+        {session ? (
+          <button
+            className={styles.button}
+            onClick={() => setShowForm(!showForm)}
+          >
+            {showForm ? "Cancel" : "+ Create New Channel"}
+          </button>
+          
+          ) : (
+            <p className={styles.authPrompt}>Please sign in to create a channel</p>
+        )}
+      </div>
 
       {/* Create new button */}
       <button className={styles.button} onClick={() => setShowForm(!showForm)}>
@@ -77,7 +94,7 @@ export default function ChannelsPage() {
       <br></br>
 
       {/* Inline create form */}
-      {showForm && (
+      {session && showForm && (
         <form onSubmit={handleCreateSubmit} className={styles.form}>
           <div className={styles.formGroup}>
             <label htmlFor="name">Channel Name</label>
