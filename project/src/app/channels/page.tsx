@@ -6,6 +6,7 @@ import Link from "next/link";
 import { Channel } from "@/types/types";
 import styles from "./channels.module.css";
 import { useSession } from "next-auth/react";
+import ConfirmDialog from "@/components/ConfirmDialog";
 
 
 export default function ChannelsPage() {
@@ -16,6 +17,8 @@ export default function ChannelsPage() {
   const [formName, setFormName] = useState("");
   const [formDescription, setFormDescription] = useState("");
   const { data: session } = useSession();
+  const [pendingDelete, setPendingDelete] = useState<Channel | null>(null);
+
 
   useEffect(() => {
     async function fetchChannels() {
@@ -61,6 +64,27 @@ export default function ChannelsPage() {
     setError("Failed to create channel. Please try again.");
   }
 }
+
+// delete channel handler
+async function handleDeleteChannel() {
+  if (!pendingDelete) return;
+  try {
+    const res = await fetch(`/api/admin/channels/${pendingDelete.id}`, {
+      method: "DELETE",
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      setError(data.error);
+      return;
+    }
+    setChannels((prev) => prev.filter((c) => c.id !== pendingDelete.id));
+  } catch (err) {
+    setError("Failed to delete channel. Please try again.");
+  } finally {
+    setPendingDelete(null);
+  }
+}
+
 
   if (loading) return <p>Loading channels...</p>;
   // if (error) return <p className={styles.error}>{error}</p>;
@@ -139,13 +163,32 @@ export default function ChannelsPage() {
                 <h2 className={styles.cardTitle}>{channel.name}</h2>
               </Link>
               <p className={styles.cardDescription}>{channel.description}</p>
-              <p className={styles.cardMeta}>
-                Created on {new Date(channel.created_at).toLocaleDateString()}
-              </p>
-              <p>{channel.post_count} posts</p>
+              
+              <div className={styles.cardFooter}>
+                <p className={styles.cardMeta}>
+                  Created on {new Date(channel.created_at).toLocaleDateString()}
+                  -{" "}
+                  {channel.post_count} posts
+                </p>
+                {session?.user.role === "admin" && (
+                  <button
+                    className={styles.deleteButton}
+                    onClick={() => setPendingDelete(channel)}>
+                    Delete Channel
+                  </button>
+                )}
+              </div>
             </li>
           ))}
         </ul>
+      )}
+      {pendingDelete && (
+        <ConfirmDialog
+          message={`Delete channel "${pendingDelete.name}"?`}
+          subMessage="This will permanently delete all posts and replies in this channel."
+          onConfirm={handleDeleteChannel}
+          onCancel={() => setPendingDelete(null)}
+        />
       )}
     </div>
   );
