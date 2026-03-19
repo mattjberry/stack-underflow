@@ -63,7 +63,7 @@ export default function ChannelsPage() {
 }
 
   if (loading) return <p>Loading channels...</p>;
-  if (error) return <p className={styles.error}>{error}</p>;
+  // if (error) return <p className={styles.error}>{error}</p>;
 
   return (
     <div className={styles.container}>
@@ -86,14 +86,11 @@ export default function ChannelsPage() {
         )}
       </div>
 
-      {/* Create new button */}
-      <button className={styles.button} onClick={() => setShowForm(!showForm)}>
-        {showForm ? "Cancel" : "+ Create New Channel"}
-      </button>
+      {error && <p className={styles.error}>{error}</p>}
 
       <br></br>
 
-      {/* Inline create form */}
+      {/* Inline create form if logged in */}
       {session && showForm && (
         <form onSubmit={handleCreateSubmit} className={styles.form}>
           <div className={styles.formGroup}>
