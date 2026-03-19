@@ -11,27 +11,26 @@ CREATE TABLE channels (
   id SERIAL PRIMARY KEY,
   name TEXT NOT NULL UNIQUE,
   description TEXT,
-  created_by INTEGER REFERENCES users(id),
+  created_by INTEGER REFERENCES users(id) ON DELETE SET NULL,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 -- Table of all posts within a channel
 CREATE TABLE posts (
   id SERIAL PRIMARY KEY,
-  channel_id INTEGER REFERENCES channels(id),
-  author_id INTEGER REFERENCES users(id),
+  channel_id INTEGER REFERENCES channels(id) ON DELETE CASCADE,
+  author_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
   title TEXT NOT NULL,
   body TEXT NOT NULL,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
--- Table of replies on an individual post
+-- Table of replies on an individual post, can be nested
 CREATE TABLE replies (
   id SERIAL PRIMARY KEY,
-  post_id INTEGER REFERENCES posts(id),
-  -- can be nested
-  parent_reply_id INTEGER REFERENCES replies(id),
-  author_id INTEGER REFERENCES users(id),
+  post_id INTEGER REFERENCES posts(id) ON DELETE CASCADE,
+  parent_reply_id INTEGER REFERENCES replies(id) ON DELETE CASCADE,
+  author_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
   body TEXT NOT NULL,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
@@ -39,7 +38,7 @@ CREATE TABLE replies (
 -- Table of upvotes and downvotes on a post or reply
 CREATE TABLE votes (
   id SERIAL PRIMARY KEY,
-  user_id INTEGER REFERENCES users(id),
+  user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
   target_type TEXT NOT NULL,  -- 'post' or 'reply'
   target_id INTEGER NOT NULL,
   value SMALLINT NOT NULL,    -- +1 or -1
