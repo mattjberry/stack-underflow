@@ -10,7 +10,7 @@
 -- Admin password: "admin123"
 -- -------------------------------------------------------------
 INSERT INTO users (display_name, password_hash, role) VALUES
-  ('admin',   '$2b$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'admin'),
+  ('admin',   '$2b$12$8XfDf/Jq6Wcz.v2YJ9JXmOzK8wRAICeKC.eyVdeVGZ.b2iHOl7lBm', 'admin'),
   ('alice',   '$2b$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'user'),
   ('bob',     '$2b$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'user'),
   ('carol',   '$2b$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'user');
