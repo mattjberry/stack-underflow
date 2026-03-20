@@ -24,6 +24,7 @@ export async function GET() {
       FROM users
       LEFT JOIN posts ON posts.author_id = users.id
       LEFT JOIN replies ON replies.author_id = users.id
+      WHERE users.id != 1
       GROUP BY users.id
       ORDER BY users.id ASC
     `);

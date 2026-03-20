@@ -26,6 +26,13 @@ export async function DELETE(
         { status: 400 }
       );
     }
+    // Can't delete the default user
+    if (id === "1") {
+      return NextResponse.json(
+        { error: "Cannot delete system user" },
+        { status: 400 }
+      );
+    }
 
     const result = await pool.query(
       `DELETE FROM users WHERE id = $1 RETURNING id`,
