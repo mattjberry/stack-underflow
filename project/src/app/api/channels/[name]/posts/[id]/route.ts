@@ -6,6 +6,7 @@ import { writeFile, mkdir } from "fs/promises";
 import { randomUUID } from "crypto";
 import path from "path";
 import { auth } from "@/lib/auth";
+import { checkRateLimit } from "@/lib/rateLimit";
 
 // Type used only here for a Post, its votes, and a list of Replies
 type PostDetail = Post & {
@@ -86,7 +87,7 @@ export async function GET(
 }
 
 // Create a new reply
-export async function POST(
+export async function POST (
   request: Request,
   { params }: { params: Promise<{ name: string; id: string }> }
 ) {
@@ -158,6 +159,13 @@ export async function POST(
       );
     }
     const authorId = parseInt(session.user.id);
+
+    if (!checkRateLimit(`reply:${session.user.id}`, 20, 60_000)) {
+      return NextResponse.json(
+        { error: "You are posting too quickly, please slow down" },
+        { status: 429 }
+      );
+    }
 
     const result = await pool.query<Reply>(
       `INSERT INTO replies (post_id, parent_reply_id, author_id, body)

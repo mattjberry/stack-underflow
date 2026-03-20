@@ -6,6 +6,8 @@ import { writeFile, mkdir } from "fs/promises";
 import { randomUUID } from "crypto";
 import path from "path";
 import { auth } from "@/lib/auth";
+import { checkRateLimit } from "@/lib/rateLimit";
+
 // GET all posts for a channel
 export async function GET(
   request: Request,
@@ -126,6 +128,14 @@ export async function POST(
       );
     }
     const authorId = parseInt(session.user.id);
+
+    // rate limit
+    if (!checkRateLimit(`post:${session.user.id}`, 20, 60_000)) {
+      return NextResponse.json(
+        { error: "You are posting too quickly, please slow down" },
+        { status: 429 }
+      );
+    }
 
     const result = await pool.query<Post>(
       `INSERT INTO posts (channel_id, author_id, title, body)
