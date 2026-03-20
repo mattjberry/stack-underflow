@@ -1,6 +1,7 @@
 import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import pool from "@/lib/db";
+import { checkRateLimit } from "./rateLimit";
 import bcrypt from "bcrypt";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
@@ -11,7 +12,13 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         username: { label: "Username", type: "text" },
         password: { label: "Password", type: "password" },
       },
-      async authorize(credentials) {
+      async authorize(credentials, request) {
+        // rate limit
+        const ip = request.headers.get("x-forwarded-for") ?? "unknown";
+        if (!checkRateLimit(`login:${ip}`, 10, 60_000)) {
+          throw new Error("Too many login attempts, please wait a minute");
+        }
+
         if (!credentials?.username || !credentials?.password) return null;
 
         const result = await pool.query(

@@ -1,10 +1,20 @@
 import { NextResponse } from "next/server";
 import pool from "@/lib/db";
+import { checkRateLimit } from "@/lib/rateLimit";
 import bcrypt from "bcrypt";
 
 // POST handling for new user signup
 export async function POST(request: Request) {
   try {
+    // Rate limit
+    const ip = request.headers.get("x-forwarded-for") ?? "unknown";
+    if (!checkRateLimit(`signup:${ip}`, 5, 60_000)) {
+      return NextResponse.json(
+        { error: "Too many signup attempts, please wait a minute" },
+        { status: 429 }
+      );
+    }
+
     const body = await request.json();
     const { username, password } = body;
 
