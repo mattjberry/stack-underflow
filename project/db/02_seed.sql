@@ -3,6 +3,11 @@
 -- Runs automatically after 01_schema.sql on first container start
 -- =============================================================
 
+-- System user, must be inserted first and must have id = 1
+-- This account is used to attribute content from deleted users
+INSERT INTO users (display_name, password_hash, role) VALUES
+  ('deleted_user', 'disabled', 'system');
+
 -- -------------------------------------------------------------
 -- USERS
 -- Passwords are bcrypt hashes of the plaintext shown in comments
