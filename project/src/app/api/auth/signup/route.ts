@@ -29,6 +29,9 @@ export async function POST(request: Request) {
         { status: 400 }
       );
     }
+    if (username.trim().length > 30) {
+      return NextResponse.json({ error: "Username must be under 30 characters" }, { status: 400 });
+    }
 
     if (password.length < 8) {
       return NextResponse.json(

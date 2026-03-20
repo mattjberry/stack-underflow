@@ -70,6 +70,7 @@ export async function POST(
     const content = formData.get("content") as string;
     const file = formData.get("attachment") as File | null;
 
+    // input validation
     if (!title || title.trim() === "") {
       return NextResponse.json(
         { error: "Post title is required" },
@@ -82,6 +83,13 @@ export async function POST(
         { error: "Post content is required" },
         { status: 400 }
       );
+    }
+
+    if (title.trim().length > 200) {
+      return NextResponse.json({ error: "Title must be under 200 characters" }, { status: 400 });
+    }
+    if (content.trim().length > 10000) {
+      return NextResponse.json({ error: "Body must be under 10,000 characters" }, { status: 400 });
     }
 
     // Validate file if provided

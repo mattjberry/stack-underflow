@@ -41,6 +41,20 @@ export async function POST(request: Request) {
         { status: 400 }
       );
     }
+    if (name.trim().length > 50) {
+      return NextResponse.json({ error: "Channel name must be under 50 characters" }, { status: 400 });
+    }
+    if (description && description.trim().length > 500) {
+      return NextResponse.json({ error: "Description must be under 500 characters" }, { status: 400 });
+    }
+
+    // Validate that channel name is valid characters for the slug
+    if (!/^[a-z0-9-_]+$/.test(name.trim())) {
+      return NextResponse.json(
+        { error: "Channel name can only contain lowercase letters, numbers, hyphens and underscores" },
+        { status: 400 }
+      );
+    }
 
     const session = await auth();
     if (!session) {

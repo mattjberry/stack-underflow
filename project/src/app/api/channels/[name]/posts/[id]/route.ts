@@ -105,6 +105,9 @@ export async function POST(
         { status: 400 }
       );
     }
+    if (replyBody.trim().length > 10000) {
+      return NextResponse.json({ error: "Reply must be under 10,000 characters" }, { status: 400 });
+    }
 
     // Validate file if provided
     if (file && file.size > 0) {
