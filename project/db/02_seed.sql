@@ -6,8 +6,8 @@
 -- -------------------------------------------------------------
 -- USERS
 -- Passwords are bcrypt hashes of the plaintext shown in comments
--- All test account passwords: "password123"
--- Admin password: "admin123"
+-- All test account passwords: "password123" maybe?
+-- Admin password: "yourpassword"
 -- -------------------------------------------------------------
 INSERT INTO users (display_name, password_hash, role) VALUES
   ('admin',   '$2b$12$8XfDf/Jq6Wcz.v2YJ9JXmOzK8wRAICeKC.eyVdeVGZ.b2iHOl7lBm', 'admin'),
