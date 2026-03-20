@@ -7,7 +7,7 @@ import { Post, Reply, Attachment } from "@/types/types";
 import styles from "@/channels/channels.module.css";
 import { useSession } from "next-auth/react";
 import ConfirmDialog from "@/components/ConfirmDialog";
-import { useRouter } from "next/router";
+import { useRouter } from "next/navigation";
 
 
 type PostDetail = Post & {
