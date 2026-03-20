@@ -118,6 +118,7 @@
   align-items: center;
   gap: 0.5rem;
   font-weight: bold;
+  position: relative;
 }
 
 .voteButton {
@@ -148,4 +149,81 @@
   max-height: 400px;
   object-fit: contain;
   border: 1px solid #ccc;
+}
+
+.authPrompt {
+  font-size: 0.85rem;
+  color: #888;
+  font-style: italic;
+  margin: 0;
+}
+
+
+/* Tooltip wrapper, modified vote buttons, only active when votesLocked is applied */
+.votesLocked {
+  position: relative;
+  cursor: not-allowed;
+}
+
+.votesLocked::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: #333;
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: normal;
+  padding: 0.3rem 0.6rem;
+  border-radius: 4px;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s ease;
+}
+
+/* Small arrow pointing down */
+.votesLocked::before {
+  content: "";
+  position: absolute;
+  bottom: calc(100% + 1px);
+  left: 50%;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-top-color: #333;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s ease;
+}
+
+.votesLocked:hover::after,
+.votesLocked:hover::before {
+  opacity: 1;
+}
+
+/* Mute the buttons visually when locked */
+.votesLocked .voteButton {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* Groups reply button and delete button side by side */
+.cardActions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.deleteButton {
+  padding: 0.3rem 0.75rem;
+  background: #cc0000;
+  color: white;
+  border: none;
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+
+.deleteButton:hover {
+  background: #aa0000;
 }

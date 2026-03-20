@@ -2,6 +2,8 @@
 import { Channel } from "@/types/types"
 import pool from "@/lib/db"
 import { NextResponse } from "next/server";
+import { auth } from "@/lib/auth";
+
 
 // GET all
 // Returns all channels as a Channel type
@@ -39,9 +41,29 @@ export async function POST(request: Request) {
         { status: 400 }
       );
     }
+    if (name.trim().length > 50) {
+      return NextResponse.json({ error: "Channel name must be under 50 characters" }, { status: 400 });
+    }
+    if (description && description.trim().length > 500) {
+      return NextResponse.json({ error: "Description must be under 500 characters" }, { status: 400 });
+    }
 
-    // TODO: replace with real user id from auth session
-    const createdBy = 1;
+    // Validate that channel name is valid characters for the slug
+    if (!/^[a-z0-9-_]+$/.test(name.trim())) {
+      return NextResponse.json(
+        { error: "Channel name can only contain lowercase letters, numbers, hyphens and underscores" },
+        { status: 400 }
+      );
+    }
+
+    const session = await auth();
+    if (!session) {
+      return NextResponse.json(
+        { error: "You must be signed in to do this" },
+        { status: 401 }
+      );
+    }
+    const createdBy = parseInt(session.user.id);
 
     const result = await pool.query<Channel>(
       `INSERT INTO channels (name, description, created_by)

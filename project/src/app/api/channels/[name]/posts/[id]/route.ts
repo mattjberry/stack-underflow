@@ -1,4 +1,3 @@
-// app/api/channels/[name]/posts/[id]/route.ts
 import { NextResponse } from "next/server";
 import pool from "@/lib/db";
 import { Post, Reply, Attachment } from "@/types/types";
@@ -6,6 +5,8 @@ import { validateFile, ALLOWED_MIME_TYPES, UPLOAD_DIR } from "@/lib/uploads";
 import { writeFile, mkdir } from "fs/promises";
 import { randomUUID } from "crypto";
 import path from "path";
+import { auth } from "@/lib/auth";
+import { checkRateLimit } from "@/lib/rateLimit";
 
 // Type used only here for a Post, its votes, and a list of Replies
 type PostDetail = Post & {
@@ -86,7 +87,7 @@ export async function GET(
 }
 
 // Create a new reply
-export async function POST(
+export async function POST (
   request: Request,
   { params }: { params: Promise<{ name: string; id: string }> }
 ) {
@@ -104,6 +105,9 @@ export async function POST(
         { error: "Reply body is required" },
         { status: 400 }
       );
+    }
+    if (replyBody.trim().length > 10000) {
+      return NextResponse.json({ error: "Reply must be under 10,000 characters" }, { status: 400 });
     }
 
     // Validate file if provided
@@ -147,8 +151,21 @@ export async function POST(
       }
     }
 
-    // TODO: replace with real user id from auth session
-    const authorId = 1;
+    const session = await auth();
+    if (!session) {
+      return NextResponse.json(
+        { error: "You must be signed in to do this" },
+        { status: 401 }
+      );
+    }
+    const authorId = parseInt(session.user.id);
+
+    if (!checkRateLimit(`reply:${session.user.id}`, 20, 60_000)) {
+      return NextResponse.json(
+        { error: "You are posting too quickly, please slow down" },
+        { status: 429 }
+      );
+    }
 
     const result = await pool.query<Reply>(
       `INSERT INTO replies (post_id, parent_reply_id, author_id, body)

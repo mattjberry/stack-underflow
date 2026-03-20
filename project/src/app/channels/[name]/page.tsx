@@ -5,6 +5,9 @@ import { useParams } from "next/navigation";
 import Link from "next/link";
 import { Post } from "@/types/types";
 import styles from "../channels.module.css";
+import { useSession } from "next-auth/react";
+import ConfirmDialog from "@/components/ConfirmDialog";
+
 
 export default function ChannelPage() {
   const { name } = useParams<{ name: string }>();
@@ -14,6 +17,9 @@ export default function ChannelPage() {
   const [showForm, setShowForm] = useState(false);
   const [formTitle, setFormTitle] = useState("");
   const [formContent, setFormContent] = useState("");
+  const { data: session } = useSession();
+  const [pendingDelete, setPendingDelete] = useState<Post | null>(null);
+
 
   useEffect(() => {
     async function fetchPosts() {
@@ -66,6 +72,26 @@ async function handleCreateSubmit(e: React.SubmitEvent) {
   }
 }
 
+// delete post handler 
+async function handleDeletePost() {
+  if (!pendingDelete) return;
+  try {
+    const res = await fetch(`/api/admin/posts/${pendingDelete.id}`, {
+      method: "DELETE",
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      setError(data.error);
+      return;
+    }
+    setPosts((prev) => prev.filter((p) => p.id !== pendingDelete.id));
+  } catch (err) {
+    setError("Failed to delete post. Please try again.");
+  } finally {
+    setPendingDelete(null);
+  }
+}
+
   if (loading) return <p>Loading posts...</p>;
 
   return (
@@ -73,18 +99,22 @@ async function handleCreateSubmit(e: React.SubmitEvent) {
 
       <div className={styles.header}>
         <h1 className={styles.title}>{name}</h1>
-        <button
-          className={styles.button}
-          onClick={() => setShowForm(!showForm)}
-        >
-          {showForm ? "Cancel" : "+ New Post"}
-        </button>
+        {session ? (
+           <button
+            className={styles.button}
+            onClick={() => setShowForm(!showForm)}
+          >
+            {showForm ? "Cancel" : "+ New Post"}
+          </button>
+        ) : (
+          <p className={styles.authPrompt}>Please sign in to create a post</p>
+        )}
       </div>
 
       {error && <p className={styles.error}>{error}</p>}
 
       {/* Inline create form */}
-      {showForm && (
+      {session && showForm && (
         <form className={styles.form} onSubmit={handleCreateSubmit}>
           <div className={styles.formGroup}>
             <label htmlFor="title">Title</label>
@@ -140,6 +170,7 @@ async function handleCreateSubmit(e: React.SubmitEvent) {
           No posts yet. Be the first to ask something!
         </p>
       ) : (
+
         <ul className={styles.list}>
           {posts.map((post) => (
             <li key={post.id} className={styles.card}>
@@ -147,16 +178,33 @@ async function handleCreateSubmit(e: React.SubmitEvent) {
                 <h2 className={styles.cardTitle}>{post.title}</h2>
               </Link>
               <p className={styles.cardDescription}>{post.body}</p>
-              <p className={styles.cardMeta}>
-                Posted by {post.author_name} on{" "}
-                {new Date(post.created_at).toLocaleDateString()} on{" "}
-                {post.reply_count} replies on{" "}
-                {post.vote_score > 0 ? `+${post.vote_score}` : post.vote_score}
-                {/* above statement display post count, adding an explicit + for positive result. Negative have a - by default */}
-              </p>
+              <div className={styles.cardFooter}>
+                <p className={styles.cardMeta}>
+                  Posted by {post.author_name} on{" "}
+                  {new Date(post.created_at).toLocaleDateString()} - {" "}
+                  {post.reply_count} replies - {" "}
+                  {post.vote_score > 0 ? `+${post.vote_score}` : post.vote_score}
+                  {/* above statement display post count, adding an explicit + for positive result. Negative have a - by default */}
+                </p>
+                {session?.user.role === "admin" && (
+                  <button
+                    className={styles.deleteButton}
+                    onClick={() => setPendingDelete(post)}>
+                    Delete Post
+                  </button>
+                )}
+              </div>
             </li>
           ))}
         </ul>
+      )}
+      {pendingDelete && (
+        <ConfirmDialog
+          message={`Delete post "${pendingDelete.title}"?`}
+          subMessage="This will permanently delete all replies to this post."
+          onConfirm={handleDeletePost}
+          onCancel={() => setPendingDelete(null)}
+        />
       )}
     </div>
   );

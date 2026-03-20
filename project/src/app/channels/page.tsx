@@ -5,6 +5,9 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Channel } from "@/types/types";
 import styles from "./channels.module.css";
+import { useSession } from "next-auth/react";
+import ConfirmDialog from "@/components/ConfirmDialog";
+
 
 export default function ChannelsPage() {
   const [channels, setChannels] = useState<Channel[]>([]);
@@ -13,6 +16,9 @@ export default function ChannelsPage() {
   const [showForm, setShowForm] = useState(false);
   const [formName, setFormName] = useState("");
   const [formDescription, setFormDescription] = useState("");
+  const { data: session } = useSession();
+  const [pendingDelete, setPendingDelete] = useState<Channel | null>(null);
+
 
   useEffect(() => {
     async function fetchChannels() {
@@ -59,25 +65,57 @@ export default function ChannelsPage() {
   }
 }
 
+// delete channel handler
+async function handleDeleteChannel() {
+  if (!pendingDelete) return;
+  try {
+    const res = await fetch(`/api/admin/channels/${pendingDelete.id}`, {
+      method: "DELETE",
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      setError(data.error);
+      return;
+    }
+    setChannels((prev) => prev.filter((c) => c.id !== pendingDelete.id));
+  } catch (err) {
+    setError("Failed to delete channel. Please try again.");
+  } finally {
+    setPendingDelete(null);
+  }
+}
+
+
   if (loading) return <p>Loading channels...</p>;
-  if (error) return <p className={styles.error}>{error}</p>;
+  // if (error) return <p className={styles.error}>{error}</p>;
 
   return (
     <div className={styles.container}>
-      <h1 className={styles.header}>Channels</h1>
+      <div className={styles.header}>
+        <h1 className={styles.title}>Channels</h1>
 
-      <hr></hr>
+        <hr></hr>
+        <br></br>
+
+        {session ? (
+          <button
+            className={styles.button}
+            onClick={() => setShowForm(!showForm)}
+          >
+            {showForm ? "Cancel" : "+ Create New Channel"}
+          </button>
+          
+          ) : (
+            <p className={styles.authPrompt}>Please sign in to create a channel</p>
+        )}
+      </div>
+
+      {error && <p className={styles.error}>{error}</p>}
+
       <br></br>
 
-      {/* Create new button */}
-      <button className={styles.button} onClick={() => setShowForm(!showForm)}>
-        {showForm ? "Cancel" : "+ Create New Channel"}
-      </button>
-
-      <br></br>
-
-      {/* Inline create form */}
-      {showForm && (
+      {/* Inline create form if logged in */}
+      {session && showForm && (
         <form onSubmit={handleCreateSubmit} className={styles.form}>
           <div className={styles.formGroup}>
             <label htmlFor="name">Channel Name</label>
@@ -125,13 +163,32 @@ export default function ChannelsPage() {
                 <h2 className={styles.cardTitle}>{channel.name}</h2>
               </Link>
               <p className={styles.cardDescription}>{channel.description}</p>
-              <p className={styles.cardMeta}>
-                Created on {new Date(channel.created_at).toLocaleDateString()}
-              </p>
-              <p>{channel.post_count} posts</p>
+              
+              <div className={styles.cardFooter}>
+                <p className={styles.cardMeta}>
+                  Created on {new Date(channel.created_at).toLocaleDateString()}
+                  -{" "}
+                  {channel.post_count} posts
+                </p>
+                {session?.user.role === "admin" && (
+                  <button
+                    className={styles.deleteButton}
+                    onClick={() => setPendingDelete(channel)}>
+                    Delete Channel
+                  </button>
+                )}
+              </div>
             </li>
           ))}
         </ul>
+      )}
+      {pendingDelete && (
+        <ConfirmDialog
+          message={`Delete channel "${pendingDelete.name}"?`}
+          subMessage="This will permanently delete all posts and replies in this channel."
+          onConfirm={handleDeleteChannel}
+          onCancel={() => setPendingDelete(null)}
+        />
       )}
     </div>
   );

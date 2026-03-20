@@ -5,6 +5,8 @@ import { validateFile, ALLOWED_MIME_TYPES, UPLOAD_DIR } from "@/lib/uploads";
 import { writeFile, mkdir } from "fs/promises";
 import { randomUUID } from "crypto";
 import path from "path";
+import { auth } from "@/lib/auth";
+import { checkRateLimit } from "@/lib/rateLimit";
 
 // GET all posts for a channel
 export async function GET(
@@ -70,6 +72,7 @@ export async function POST(
     const content = formData.get("content") as string;
     const file = formData.get("attachment") as File | null;
 
+    // input validation
     if (!title || title.trim() === "") {
       return NextResponse.json(
         { error: "Post title is required" },
@@ -82,6 +85,13 @@ export async function POST(
         { error: "Post content is required" },
         { status: 400 }
       );
+    }
+
+    if (title.trim().length > 200) {
+      return NextResponse.json({ error: "Title must be under 200 characters" }, { status: 400 });
+    }
+    if (content.trim().length > 10000) {
+      return NextResponse.json({ error: "Body must be under 10,000 characters" }, { status: 400 });
     }
 
     // Validate file if provided
@@ -110,8 +120,22 @@ export async function POST(
 
     const channelId = channel.rows[0].id;
 
-    // TODO: replace with real user id from auth session
-    const authorId = 1;
+    const session = await auth();
+    if (!session) {
+      return NextResponse.json(
+        { error: "You must be signed in to do this" },
+        { status: 401 }
+      );
+    }
+    const authorId = parseInt(session.user.id);
+
+    // rate limit
+    if (!checkRateLimit(`post:${session.user.id}`, 20, 60_000)) {
+      return NextResponse.json(
+        { error: "You are posting too quickly, please slow down" },
+        { status: 429 }
+      );
+    }
 
     const result = await pool.query<Post>(
       `INSERT INTO posts (channel_id, author_id, title, body)
