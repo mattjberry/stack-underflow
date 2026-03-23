@@ -143,7 +143,7 @@
 
 .resultMeta {
   font-size: 0.8rem;
-  color: #888;
+  color: #666;
 }
 
 /* Pagination */
@@ -161,7 +161,7 @@
 }
 
 .empty {
-  color: #888;
+  color: #666;
   font-style: italic;
 }
 

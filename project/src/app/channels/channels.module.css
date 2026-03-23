@@ -78,11 +78,11 @@
 
 .cardMeta {
   font-size: 0.85rem;
-  color: #888;
+  color: #666;
 }
 
 .empty {
-  color: #888;
+  color: #666;
   font-style: italic;
 }
 
@@ -96,6 +96,21 @@
   justify-content: space-between;
   align-items: center;
   margin-top: 0.75rem;
+}
+
+.button:focus-visible {
+  outline: 2px solid #0070f3;
+  outline-offset: 2px;
+}
+
+.voteButton:focus-visible {
+  outline: 2px solid #0070f3;
+  outline-offset: 2px;
+}
+
+.deleteButton:focus-visible {
+  outline: 2px solid #cc0000;
+  outline-offset: 2px;
 }
 
 /* Vote controls */
