@@ -16,7 +16,7 @@ export default function ChannelsPage() {
   const [showForm, setShowForm] = useState(false);
   const [formName, setFormName] = useState("");
   const [formDescription, setFormDescription] = useState("");
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   const [pendingDelete, setPendingDelete] = useState<Channel | null>(null);
 
 
@@ -97,14 +97,14 @@ async function handleDeleteChannel() {
         <hr></hr>
         <br></br>
 
-        {session ? (
+        {status === "authenticated" ? (
           <button
             className={styles.button}
             onClick={() => setShowForm(!showForm)}
           >
             {showForm ? "Cancel" : "+ Create New Channel"}
           </button>
-          
+
           ) : (
             <p className={styles.authPrompt}>Please sign in to create a channel</p>
         )}
@@ -115,7 +115,7 @@ async function handleDeleteChannel() {
       <br></br>
 
       {/* Inline create form if logged in */}
-      {session && showForm && (
+      {status === "authenticated" && showForm && (
         <form onSubmit={handleCreateSubmit} className={styles.form}>
           <div className={styles.formGroup}>
             <label htmlFor="name">Channel Name</label>
@@ -170,7 +170,7 @@ async function handleDeleteChannel() {
                   -{" "}
                   {channel.post_count} posts
                 </p>
-                {session?.user.role === "admin" && (
+                {status === "authenticated" && session?.user.role === "admin" && (
                   <button
                     className={styles.deleteButton}
                     onClick={() => setPendingDelete(channel)}>

@@ -17,7 +17,7 @@ export default function ChannelPage() {
   const [showForm, setShowForm] = useState(false);
   const [formTitle, setFormTitle] = useState("");
   const [formContent, setFormContent] = useState("");
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   const [pendingDelete, setPendingDelete] = useState<Post | null>(null);
 
 
@@ -99,7 +99,7 @@ async function handleDeletePost() {
 
       <div className={styles.header}>
         <h1 className={styles.title}>{name}</h1>
-        {session ? (
+        {status === "authenticated" ? (
            <button
             className={styles.button}
             onClick={() => setShowForm(!showForm)}
@@ -114,7 +114,7 @@ async function handleDeletePost() {
       {error && <p className={styles.error}>{error}</p>}
 
       {/* Inline create form */}
-      {session && showForm && (
+      {status === "authenticated" && showForm && (
         <form className={styles.form} onSubmit={handleCreateSubmit}>
           <div className={styles.formGroup}>
             <label htmlFor="title">Title</label>
@@ -186,7 +186,7 @@ async function handleDeletePost() {
                   {post.vote_score > 0 ? `+${post.vote_score}` : post.vote_score}
                   {/* above statement display post count, adding an explicit + for positive result. Negative have a - by default */}
                 </p>
-                {session?.user.role === "admin" && (
+                {status === "authenticated" && session?.user.role === "admin" && (
                   <button
                     className={styles.deleteButton}
                     onClick={() => setPendingDelete(post)}>
