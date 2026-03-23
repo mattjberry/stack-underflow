@@ -1,0 +1,89 @@
+.nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 2rem;
+  border-bottom: 1px solid #ccc;
+  gap: 1rem;
+}
+
+.navLeft {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  flex-shrink: 0;
+}
+
+.navBrand {
+  font-size: 1.2rem;
+  font-weight: bold;
+  text-decoration: none;
+  color: inherit;
+}
+
+.navLink {
+  font-size: 0.9rem;
+  text-decoration: none;
+  color: #444;
+}
+
+.navLink:hover {
+  color: #000;
+}
+
+/* Search bar */
+.navSearch {
+  display: flex;
+  gap: 0.5rem;
+  flex: 1;
+  max-width: 480px;
+}
+
+.navSearchInput {
+  flex: 1;
+  padding: 0.4rem 0.75rem;
+  font-size: 0.9rem;
+  border: 1px solid #ccc;
+}
+
+.navSearchInput:focus {
+  outline: 2px solid #0070f3;
+  border-color: transparent;
+}
+
+.navSearchButton {
+  padding: 0.4rem 0.75rem;
+  font-size: 0.9rem;
+  cursor: pointer;
+  background: #0070f3;
+  color: white;
+  border: none;
+}
+
+.navSearchButton:hover {
+  background: #0060df;
+}
+
+.navRight {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-shrink: 0;
+}
+
+.navUser {
+  font-size: 0.85rem;
+  color: #666;
+}
+
+.navButton {
+  padding: 0.4rem 0.75rem;
+  font-size: 0.9rem;
+  cursor: pointer;
+  background: none;
+  border: 1px solid #ccc;
+}
+
+.navButton:hover {
+  background: #f0f0f0;
+}
