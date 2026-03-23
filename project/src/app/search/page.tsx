@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import styles from "./search.module.css";
+import Spinner from "@/components/Spinner";
 
 type SearchResult = {
   result_type?: "post" | "reply";
@@ -191,7 +192,7 @@ export default function SearchPage() {
       {error && <p className={styles.error}>{error}</p>}
 
       {loading ? (
-        <p className={styles.empty}>Searching...</p>
+        <Spinner message="Searching..." />
       ) : response ? (
         <>
           <p className={styles.resultCount}>

@@ -7,6 +7,7 @@ import { Channel } from "@/types/types";
 import styles from "./channels.module.css";
 import { useSession } from "next-auth/react";
 import ConfirmDialog from "@/components/ConfirmDialog";
+import Spinner from "@/components/Spinner"
 
 
 export default function ChannelsPage() {
@@ -86,8 +87,7 @@ async function handleDeleteChannel() {
 }
 
 
-  if (loading) return <p>Loading channels...</p>;
-  // if (error) return <p className={styles.error}>{error}</p>;
+  if (loading) return <Spinner message="Loading channels..." />;
 
   return (
     <div className={styles.container}>

@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { AdminUser } from "@/types/types"
 import ConfirmDialog from "@/components/ConfirmDialog";
 import styles from "./admin.module.css";
+import Spinner from "@/components/Spinner";
 
 export default function AdminPage() {
   const { data: session, status } = useSession();
@@ -68,9 +69,9 @@ export default function AdminPage() {
   }
 
   // Don't render anything while checking auth
-  if (status === "loading") return <p>Loading...</p>;
+  if (status === "loading") return <Spinner />;
   if (!session || session.user.role !== "admin") return null;
-  if (loading) return <p>Loading users...</p>;
+  if (loading) return <Spinner message="Loading users..." />;
 
   return (
     <div className={styles.container}>
