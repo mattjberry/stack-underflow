@@ -134,6 +134,11 @@
   background-color: #f0f0f0;
 }
 
+.voteButtonActive {
+  background-color: #e0f0ff;
+  border-color: #4a90d9;
+}
+
 /* Reply form action row */
 .formActions {
   display: flex;

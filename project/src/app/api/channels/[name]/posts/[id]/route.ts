@@ -21,19 +21,23 @@ export async function GET(
   try {
     const { id } = await params;
 
-    // Get post details + net vote score in one query
+    const session = await auth();
+    const userId = session ? parseInt(session.user.id) : null;
+
+    // Get post details + net vote score + current user's vote in one query
     const postResult = await pool.query<Post>(
       `SELECT
         posts.*,
         users.display_name AS author_name,
-        COALESCE(SUM(votes.value), 0)::int AS vote_score
+        COALESCE(SUM(votes.value), 0)::int AS vote_score,
+        COALESCE(MAX(CASE WHEN votes.user_id = $2 THEN votes.value END), 0)::int AS user_vote
        FROM posts
        LEFT JOIN users ON users.id = posts.author_id
        LEFT JOIN votes ON votes.target_id = posts.id
          AND votes.target_type = 'post'
        WHERE posts.id = $1
        GROUP BY posts.id, users.display_name`,
-      [id]
+      [id, userId]
     );
 
     if (postResult.rows.length === 0) {
@@ -43,12 +47,13 @@ export async function GET(
       );
     }
 
-    // Get all replies for this post + their vote scores
+    // Get all replies for this post + their vote scores + current user's votes
     const repliesResult = await pool.query<Reply>(
       `SELECT
         replies.*,
         users.display_name AS author_name,
-        COALESCE(SUM(votes.value), 0)::int AS vote_score
+        COALESCE(SUM(votes.value), 0)::int AS vote_score,
+        COALESCE(MAX(CASE WHEN votes.user_id = $2 THEN votes.value END), 0)::int AS user_vote
        FROM replies
        LEFT JOIN users ON users.id = replies.author_id
        LEFT JOIN votes ON votes.target_id = replies.id
@@ -56,7 +61,7 @@ export async function GET(
        WHERE replies.post_id = $1
        GROUP BY replies.id, users.display_name
        ORDER BY replies.created_at ASC`,
-      [id]
+      [id, userId]
     );
 
     // get all the attachments

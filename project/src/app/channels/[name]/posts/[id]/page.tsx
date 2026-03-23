@@ -123,6 +123,74 @@ async function handleDeleteReply() {
   }
 }
 
+async function handleVote(targetType: "post" | "reply", targetId: number, clickedValue: 1 | -1) {
+  if (!post) return;
+
+  // Get the current vote state for this target
+  let currentUserVote: 0 | 1 | -1;
+  let currentScore: number;
+  if (targetType === "post") {
+    currentUserVote = post.user_vote;
+    currentScore = post.vote_score;
+  } else {
+    const reply = post.replies.find((r) => r.id === targetId);
+    if (!reply) return;
+    currentUserVote = reply.user_vote;
+    currentScore = reply.vote_score;
+  }
+
+  // Clicking same direction removes the vote (toggle off)
+  const newUserVote: 0 | 1 | -1 = clickedValue === currentUserVote ? 0 : clickedValue;
+  const newScore = currentScore - currentUserVote + newUserVote;
+
+  // Snapshot for rollback on error
+  const prevPost = post;
+
+  // Optimistic update
+  setPost((prev) => {
+    if (!prev) return prev;
+    if (targetType === "post") {
+      return { ...prev, vote_score: newScore, user_vote: newUserVote };
+    }
+    return {
+      ...prev,
+      replies: prev.replies.map((r) =>
+        r.id === targetId ? { ...r, vote_score: newScore, user_vote: newUserVote } : r
+      ),
+    };
+  });
+
+  try {
+    const res = await fetch("/api/votes", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ targetType, targetId, value: newUserVote }),
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      setPost(prevPost);
+      setError(data.error || "Failed to vote");
+      return;
+    }
+    // Sync with authoritative values from server
+    setPost((prev) => {
+      if (!prev) return prev;
+      if (targetType === "post") {
+        return { ...prev, vote_score: data.vote_score, user_vote: data.user_vote };
+      }
+      return {
+        ...prev,
+        replies: prev.replies.map((r) =>
+          r.id === targetId ? { ...r, vote_score: data.vote_score, user_vote: data.user_vote } : r
+        ),
+      };
+    });
+  } catch (err) {
+    setPost(prevPost);
+    setError("Failed to vote. Please try again.");
+  }
+}
+
 async function handleReplySubmit(e: React.SubmitEvent, parentReplyId: number | null) {
   e.preventDefault();
   if (!replyBody.trim()) return;
@@ -221,7 +289,9 @@ function renderReplyForm(parentReplyId: number | null) {
 
     return (
       <ul className={styles.list} style={{ paddingLeft: depth > 0 ? "1.5rem" : "0" }}>
-        {filtered.map((reply) => (
+        {filtered.map((reply) => {
+          const isReplyAuthor = session && parseInt(session.user.id) === reply.author_id;
+          return (
           <li key={reply.id} className={styles.card}>
             <p>{reply.body}</p>
             <AttachmentImage
@@ -233,14 +303,23 @@ function renderReplyForm(parentReplyId: number | null) {
               {reply.author_name} · {new Date(reply.created_at).toLocaleDateString()}
             </div>
             <div className={styles.cardFooter}>
-              <div className={`${styles.votes} ${!session ? styles.votesLocked : ""}`}
-                   data-tooltip="Please sign in to vote">
-                <button className={styles.voteButton} disabled={!session}>
+              <div
+                className={`${styles.votes} ${(!session || isReplyAuthor) ? styles.votesLocked : ""}`}
+                data-tooltip={isReplyAuthor ? "You cannot vote on your own content" : "Please sign in to vote"}
+              >
+                <button
+                  className={`${styles.voteButton} ${reply.user_vote === 1 ? styles.voteButtonActive : ""}`}
+                  disabled={!session || !!isReplyAuthor}
+                  onClick={() => handleVote("reply", reply.id, 1)}
+                >
                   👍
-                {/*TODO : Replace these icons lol */}
                 </button>
                 <span>{formatScore(reply.vote_score)}</span>
-                <button className={styles.voteButton} disabled={!session}>
+                <button
+                  className={`${styles.voteButton} ${reply.user_vote === -1 ? styles.voteButtonActive : ""}`}
+                  disabled={!session || !!isReplyAuthor}
+                  onClick={() => handleVote("reply", reply.id, -1)}
+                >
                   👎
                 </button>
               </div>
@@ -269,7 +348,8 @@ function renderReplyForm(parentReplyId: number | null) {
             {/* Nested replies */}
             {renderReplies(replies, reply.id, depth + 1)}
           </li>
-        ))}
+          );
+        })}
       </ul>
     );
   }
@@ -295,17 +375,31 @@ function renderReplyForm(parentReplyId: number | null) {
           {new Date(post.created_at).toLocaleDateString()}
         </p>
         <div className={styles.cardFooter}>
-          <div className={`${styles.votes} ${!session ? styles.votesLocked : ""}`}
-               data-tooltip="Please sign in to vote">
-            <button className={styles.voteButton} disabled={!session}>
-                👍
-            </button>
-            { /* TODO change these icons lol */}
-            <span>{formatScore(post.vote_score)}</span>
-            <button className={styles.voteButton} disabled={!session}>
-                👎
-            </button>
-          </div>
+          {(() => {
+            const isPostAuthor = session && parseInt(session.user.id) === post.author_id;
+            return (
+              <div
+                className={`${styles.votes} ${(!session || isPostAuthor) ? styles.votesLocked : ""}`}
+                data-tooltip={isPostAuthor ? "You cannot vote on your own content" : "Please sign in to vote"}
+              >
+                <button
+                  className={`${styles.voteButton} ${post.user_vote === 1 ? styles.voteButtonActive : ""}`}
+                  disabled={!session || !!isPostAuthor}
+                  onClick={() => handleVote("post", post.id, 1)}
+                >
+                  👍
+                </button>
+                <span>{formatScore(post.vote_score)}</span>
+                <button
+                  className={`${styles.voteButton} ${post.user_vote === -1 ? styles.voteButtonActive : ""}`}
+                  disabled={!session || !!isPostAuthor}
+                  onClick={() => handleVote("post", post.id, -1)}
+                >
+                  👎
+                </button>
+              </div>
+            );
+          })()}
           {session ? (
             <button
               className={styles.button}
