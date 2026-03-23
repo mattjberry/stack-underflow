@@ -5,6 +5,7 @@ import Breadcrumbs from "./components/Breadcrumbs";
 import NavAuth from "./components/NavAuth";
 import { SessionProvider } from "next-auth/react";
 import { auth } from "@/lib/auth";
+import Nav from "@/components/Nav";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -33,12 +34,12 @@ export default async function RootLayout({
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable}`}>
         <SessionProvider session={session}>
-          <nav>
-            <Breadcrumbs />
-            <NavAuth />
-          </nav>
-          
-          {children}
+          <Nav />
+          <Breadcrumbs />
+          <NavAuth />
+          <main>
+            {children}
+          </main>
         </SessionProvider>
       </body>
     </html>

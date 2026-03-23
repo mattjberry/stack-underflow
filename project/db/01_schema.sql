@@ -70,5 +70,5 @@ CREATE INDEX ON posts(title);
 CREATE INDEX ON users(display_name);
 -- replace with the following for part 4
 -- Enables fast ILIKE '%keyword%' searches
---CREATE INDEX ON posts USING gin(to_tsvector('english', title || ' ' || body));
---CREATE INDEX ON replies USING gin(to_tsvector('english', body));
+CREATE INDEX ON posts USING gin(to_tsvector('english', title || ' ' || body));
+CREATE INDEX ON replies USING gin(to_tsvector('english', body));

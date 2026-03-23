@@ -51,20 +51,6 @@
   border: 1px solid #ccc;
 }
 
-/* Search */
-.search {
-  display: flex;
-  gap: 0.5rem;
-  margin-bottom: 1.5rem;
-}
-
-.search input {
-  flex: 1;
-  padding: 0.5rem;
-  font-size: 1rem;
-  border: 1px solid #ccc;
-}
-
 /* List */
 .list {
   display: flex;
@@ -92,11 +78,11 @@
 
 .cardMeta {
   font-size: 0.85rem;
-  color: #888;
+  color: #666;
 }
 
 .empty {
-  color: #888;
+  color: #666;
   font-style: italic;
 }
 
@@ -110,6 +96,21 @@
   justify-content: space-between;
   align-items: center;
   margin-top: 0.75rem;
+}
+
+.button:focus-visible {
+  outline: 2px solid #0070f3;
+  outline-offset: 2px;
+}
+
+.voteButton:focus-visible {
+  outline: 2px solid #0070f3;
+  outline-offset: 2px;
+}
+
+.deleteButton:focus-visible {
+  outline: 2px solid #cc0000;
+  outline-offset: 2px;
 }
 
 /* Vote controls */
@@ -231,4 +232,28 @@
 
 .deleteButton:hover {
   background: #aa0000;
+}
+
+/* Address visual issues on narrow screens */
+@media (max-width: 600px) {
+  .container {
+    padding: 1rem;
+  }
+
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+
+  .cardFooter {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .cardActions {
+    width: 100%;
+    justify-content: flex-end;
+  }
 }

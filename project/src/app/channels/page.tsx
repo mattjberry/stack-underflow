@@ -7,6 +7,7 @@ import { Channel } from "@/types/types";
 import styles from "./channels.module.css";
 import { useSession } from "next-auth/react";
 import ConfirmDialog from "@/components/ConfirmDialog";
+import Spinner from "@/components/Spinner"
 
 
 export default function ChannelsPage() {
@@ -86,8 +87,7 @@ async function handleDeleteChannel() {
 }
 
 
-  if (loading) return <p>Loading channels...</p>;
-  // if (error) return <p className={styles.error}>{error}</p>;
+  if (loading) return <Spinner message="Loading channels..." />;
 
   return (
     <div className={styles.container}>
@@ -141,14 +141,6 @@ async function handleDeleteChannel() {
           <button type="submit" className={styles.button}>Create Channel</button>
         </form>
       )}
-
-      <br></br>
-
-      {/* Search bar, wired up later */}
-      <div className={styles.search}>
-        <input type="text" placeholder="Search channels..." disabled />
-        <button disabled className={styles.button}>Search</button>
-      </div>
 
       <hr></hr>
 

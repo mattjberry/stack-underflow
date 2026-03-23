@@ -86,3 +86,12 @@
   color: #888;
   font-style: italic;
 }
+
+@media (max-width: 600px) {
+  /* Make table scrollable rather than overflowing */
+  .table {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+}

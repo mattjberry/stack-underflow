@@ -8,6 +8,7 @@ import styles from "@/channels/channels.module.css";
 import { useSession } from "next-auth/react";
 import ConfirmDialog from "@/components/ConfirmDialog";
 import { useRouter } from "next/navigation";
+import Spinner from "@/components/Spinner";
 
 
 type PostDetail = Post & {
@@ -354,7 +355,7 @@ function renderReplyForm(parentReplyId: number | null) {
     );
   }
 
-  if (loading) return <p>Loading post...</p>;
+  if (loading) return <Spinner message="Loading post..." />;
   if (error) return <p className={styles.error}>{error}</p>;
   if (!post) return <p className={styles.empty}>Post not found.</p>;
 

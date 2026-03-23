@@ -7,6 +7,7 @@ import { Post } from "@/types/types";
 import styles from "../channels.module.css";
 import { useSession } from "next-auth/react";
 import ConfirmDialog from "@/components/ConfirmDialog";
+import Spinner from "@/components/Spinner";
 
 
 export default function ChannelPage() {
@@ -92,7 +93,7 @@ async function handleDeletePost() {
   }
 }
 
-  if (loading) return <p>Loading posts...</p>;
+  if (loading) return <Spinner message="Loading posts..." />;
 
   return (
     <div className={styles.container}>
@@ -157,12 +158,6 @@ async function handleDeletePost() {
           </button>
         </form>
       )}
-
-      {/* Search bar - wired up later */}
-      <div className={styles.search}>
-        <input type="text" placeholder="Search posts..." disabled />
-        <button className={styles.button} disabled>Search</button>
-      </div>
 
       {/* Empty state */}
       {posts.length === 0 ? (
