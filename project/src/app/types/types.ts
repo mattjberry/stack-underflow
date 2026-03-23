@@ -19,6 +19,7 @@ export type Post = {
   created_at: Date;
   reply_count: number;
   vote_score: number;
+  user_vote: 0 | 1 | -1;
 };
 
 // Reply
@@ -31,6 +32,7 @@ export type Reply = {
   body: string;
   created_at: Date;
   vote_score: number;
+  user_vote: 0 | 1 | -1;
 }
 
 // Attachments
