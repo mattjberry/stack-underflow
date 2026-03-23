@@ -158,12 +158,6 @@ async function handleDeletePost() {
         </form>
       )}
 
-      {/* Search bar - wired up later */}
-      <div className={styles.search}>
-        <input type="text" placeholder="Search posts..." disabled />
-        <button className={styles.button} disabled>Search</button>
-      </div>
-
       {/* Empty state */}
       {posts.length === 0 ? (
         <p className={styles.empty}>

@@ -142,14 +142,6 @@ async function handleDeleteChannel() {
         </form>
       )}
 
-      <br></br>
-
-      {/* Search bar, wired up later */}
-      <div className={styles.search}>
-        <input type="text" placeholder="Search channels..." disabled />
-        <button disabled className={styles.button}>Search</button>
-      </div>
-
       <hr></hr>
 
       {/* Empty state */}
