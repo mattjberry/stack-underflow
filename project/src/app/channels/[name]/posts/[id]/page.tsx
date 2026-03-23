@@ -45,7 +45,7 @@ export default function PostPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [replyFile, setReplyFile] = useState<File | null>(null);
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   const [pendingDeletePost, setPendingDeletePost] = useState(false);
   const [pendingDeleteReply, setPendingDeleteReply] = useState<Reply | null>(null);
   const router = useRouter();
@@ -69,7 +69,7 @@ export default function PostPage() {
       }
     }
     fetchPost();
-  }, [name, id]);
+  }, [name, id, status]);
 
   // Delete post handler — navigates back to channel on success
 async function handleDeletePost() {
@@ -290,7 +290,7 @@ function renderReplyForm(parentReplyId: number | null) {
     return (
       <ul className={styles.list} style={{ paddingLeft: depth > 0 ? "1.5rem" : "0" }}>
         {filtered.map((reply) => {
-          const isReplyAuthor = session && parseInt(session.user.id) === reply.author_id;
+          const isReplyAuthor = status === "authenticated" && parseInt(session!.user.id) === reply.author_id;
           return (
           <li key={reply.id} className={styles.card}>
             <p>{reply.body}</p>
@@ -304,12 +304,12 @@ function renderReplyForm(parentReplyId: number | null) {
             </div>
             <div className={styles.cardFooter}>
               <div
-                className={`${styles.votes} ${(!session || isReplyAuthor) ? styles.votesLocked : ""}`}
+                className={`${styles.votes} ${(status !== "authenticated" || isReplyAuthor) ? styles.votesLocked : ""}`}
                 data-tooltip={isReplyAuthor ? "You cannot vote on your own content" : "Please sign in to vote"}
               >
                 <button
                   className={`${styles.voteButton} ${reply.user_vote === 1 ? styles.voteButtonActive : ""}`}
-                  disabled={!session || !!isReplyAuthor}
+                  disabled={status !== "authenticated" || !!isReplyAuthor}
                   onClick={() => handleVote("reply", reply.id, 1)}
                 >
                   👍
@@ -317,13 +317,13 @@ function renderReplyForm(parentReplyId: number | null) {
                 <span>{formatScore(reply.vote_score)}</span>
                 <button
                   className={`${styles.voteButton} ${reply.user_vote === -1 ? styles.voteButtonActive : ""}`}
-                  disabled={!session || !!isReplyAuthor}
+                  disabled={status !== "authenticated" || !!isReplyAuthor}
                   onClick={() => handleVote("reply", reply.id, -1)}
                 >
                   👎
                 </button>
               </div>
-              {session ? (
+              {status === "authenticated" ? (
                 <button
                   className={styles.button}
                   onClick={() => setReplyingTo(reply.id)}>
@@ -332,7 +332,7 @@ function renderReplyForm(parentReplyId: number | null) {
               ) : (
                 <p className={styles.authPrompt}>Please sign in to reply</p>
               )}
-              {session?.user.role === "admin" && (
+              {status === "authenticated" && session?.user.role === "admin" && (
                 <button
                   className={styles.deleteButton}
                   onClick={() => setPendingDeleteReply(reply)}
@@ -376,15 +376,15 @@ function renderReplyForm(parentReplyId: number | null) {
         </p>
         <div className={styles.cardFooter}>
           {(() => {
-            const isPostAuthor = session && parseInt(session.user.id) === post.author_id;
+            const isPostAuthor = status === "authenticated" && parseInt(session!.user.id) === post.author_id;
             return (
               <div
-                className={`${styles.votes} ${(!session || isPostAuthor) ? styles.votesLocked : ""}`}
+                className={`${styles.votes} ${(status !== "authenticated" || isPostAuthor) ? styles.votesLocked : ""}`}
                 data-tooltip={isPostAuthor ? "You cannot vote on your own content" : "Please sign in to vote"}
               >
                 <button
                   className={`${styles.voteButton} ${post.user_vote === 1 ? styles.voteButtonActive : ""}`}
-                  disabled={!session || !!isPostAuthor}
+                  disabled={status !== "authenticated" || !!isPostAuthor}
                   onClick={() => handleVote("post", post.id, 1)}
                 >
                   👍
@@ -392,7 +392,7 @@ function renderReplyForm(parentReplyId: number | null) {
                 <span>{formatScore(post.vote_score)}</span>
                 <button
                   className={`${styles.voteButton} ${post.user_vote === -1 ? styles.voteButtonActive : ""}`}
-                  disabled={!session || !!isPostAuthor}
+                  disabled={status !== "authenticated" || !!isPostAuthor}
                   onClick={() => handleVote("post", post.id, -1)}
                 >
                   👎
@@ -400,7 +400,7 @@ function renderReplyForm(parentReplyId: number | null) {
               </div>
             );
           })()}
-          {session ? (
+          {status === "authenticated" ? (
             <button
               className={styles.button}
               onClick={() => setReplyingTo(null)}
@@ -410,7 +410,7 @@ function renderReplyForm(parentReplyId: number | null) {
           ) : (
             <p className={styles.authPrompt}>Please sign in to reply</p>
           )}
-          {session?.user.role === "admin" && (
+          {status === "authenticated" && session?.user.role === "admin" && (
             <button
               className={styles.deleteButton}
               onClick={() => setPendingDeletePost(true)}>
