@@ -1,4 +1,4 @@
-# stack-overflow-2
+# Stack Underflow
 A functional clone of Stack Overflow created as project for CMPT353 - Full Stack Development
 
 Built with Typescript using Next.js full-stack framework.
