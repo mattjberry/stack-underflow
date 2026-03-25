@@ -62,7 +62,16 @@ async function handleCreateSubmit(e: React.SubmitEvent) {
       return;
     }
 
-    setPosts((prev) => [data, ...prev]);
+    setPosts((prev) => [
+      {
+        ...data,
+        vote_score: 0,
+        user_vote: 0,
+        reply_count: 0,
+        author_name: session?.user.name ?? "You",
+      },
+      ...prev
+    ]);
     setFormTitle("");
     setFormContent("");
     setFormFile(null);

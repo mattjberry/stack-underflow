@@ -215,7 +215,15 @@ async function handleReplySubmit(e: React.SubmitEvent, parentReplyId: number | n
     }
 
     setPost((prev) =>
-      prev ? { ...prev, replies: [...prev.replies, data] } : prev
+      prev ? {
+        ...prev,
+        replies: [...prev.replies, {
+          ...data,
+          vote_score: 0,
+          user_vote: 0,
+          author_name: session?.user.name ?? "You",
+        }]
+      } : prev
     );
     setReplyBody("");
     setReplyFile(null);
