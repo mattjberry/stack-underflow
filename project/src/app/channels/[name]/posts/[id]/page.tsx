@@ -9,6 +9,7 @@ import { useSession } from "next-auth/react";
 import ConfirmDialog from "@/components/ConfirmDialog";
 import { useRouter } from "next/navigation";
 import Spinner from "@/components/Spinner";
+import Image from "next/image";
 
 
 type PostDetail = Post & {
@@ -339,7 +340,14 @@ function renderReplies(
                 }`}
                 disabled={status !== "authenticated" || isReplyAuthor}
                 onClick={() => handleVote("reply", reply.id, 1)}
-              >👍</button>
+              >
+                <Image
+                  src="/thumbs-up.png"
+                  alt="Upvote"
+                  width={18}
+                  height={18}
+                /> 
+              </button>
               <span>{formatScore(reply.vote_score)}</span>
               <button
                 className={`${styles.voteButton} ${
@@ -347,7 +355,14 @@ function renderReplies(
                 }`}
                 disabled={status !== "authenticated" || isReplyAuthor}
                 onClick={() => handleVote("reply", reply.id, -1)}
-              >👎</button>
+              >
+                <Image
+                  src="/thumbs-down.png"
+                  alt="Downvote"
+                  width={18}
+                  height={18}
+                /> 
+              </button>
             </div>
           </div>
           <div className={styles.postCardActions}>
@@ -431,7 +446,14 @@ function renderReplies(
                 }`}
                 disabled={status !== "authenticated" || isPostAuthor}
                 onClick={() => handleVote("post", post.id, 1)}
-              >👍</button>
+              >
+                <Image
+                  src="/thumbs-up.png"
+                  alt="Upvote"
+                  width={18}
+                  height={18}
+                /> 
+              </button>
               <span>{formatScore(post.vote_score)}</span>
               <button
                 className={`${styles.voteButton} ${
@@ -439,7 +461,14 @@ function renderReplies(
                 }`}
                 disabled={status !== "authenticated" || isPostAuthor}
                 onClick={() => handleVote("post", post.id, -1)}
-              >👎</button>
+              >
+                <Image
+                  src="/thumbs-down.png"
+                  alt="Downvote"
+                  width={18}
+                  height={18}
+                /> 
+              </button>
             </div>
           </div>
           <div className={styles.postCardActions}>
