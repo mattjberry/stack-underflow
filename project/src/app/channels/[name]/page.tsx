@@ -97,6 +97,7 @@ async function handleDeletePost() {
 
   return (
     <div className={styles.container}>
+    <div className={styles.eyebrow}>Stack Underflow · Programming Q&amp;A</div>
 
       <div className={styles.header}>
         <h1 className={styles.title}>{name}</h1>
@@ -159,6 +160,8 @@ async function handleDeletePost() {
         </form>
       )}
 
+      <br></br>
+
       {/* Empty state */}
       {posts.length === 0 ? (
         <p className={styles.empty}>
@@ -167,29 +170,33 @@ async function handleDeletePost() {
       ) : (
 
         <ul className={styles.list}>
-          {posts.map((post) => (
+          {posts.map((post, index) => (
             <li key={post.id} className={styles.card}>
+            <div className={styles.cardIndex}>{index + 1}</div>
+            <div className={styles.cardBody}>
               <Link href={`/channels/${name}/posts/${post.id}`}>
                 <h2 className={styles.cardTitle}>{post.title}</h2>
               </Link>
               <p className={styles.cardDescription}>{post.body}</p>
-              <div className={styles.cardFooter}>
-                <p className={styles.cardMeta}>
-                  Posted by {post.author_name} on{" "}
-                  {new Date(post.created_at).toLocaleDateString()} - {" "}
-                  {post.reply_count} replies - {" "}
-                  {post.vote_score > 0 ? `+${post.vote_score}` : post.vote_score}
-                  {/* above statement display post count, adding an explicit + for positive result. Negative have a - by default */}
-                </p>
-                {status === "authenticated" && session?.user.role === "admin" && (
-                  <button
-                    className={styles.deleteButton}
-                    onClick={() => setPendingDelete(post)}>
-                    Delete Post
-                  </button>
-                )}
-              </div>
-            </li>
+            </div>
+            <div className={styles.postMeta}>
+              <p className={styles.cardMeta}>
+                By {post.author_name} ·{" "}
+                {new Date(post.created_at).toLocaleDateString()} ·{" "}
+                {post.reply_count} replies ·{" "}
+                {post.vote_score > 0 ? `+${post.vote_score}` : post.vote_score}
+              </p>
+              {session?.user.role === "admin" && (
+                <button
+                  className={styles.deleteButton}
+                  onClick={() => setPendingDelete(post)}
+                >
+                  Delete Post
+                </button>
+              )}
+            </div>
+          </li>
+
           ))}
         </ul>
       )}

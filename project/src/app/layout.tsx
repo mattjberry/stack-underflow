@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import "./globals.css";
-import Breadcrumbs from "./components/Breadcrumbs";
-import NavAuth from "./components/NavAuth";
 import { SessionProvider } from "next-auth/react";
 import { auth } from "@/lib/auth";
+import Breadcrumbs from "./components/Breadcrumbs";
+import NavAuth from "./components/NavAuth";
 import Nav from "@/components/Nav";
+import "./globals.css";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -36,7 +36,6 @@ export default async function RootLayout({
         <SessionProvider session={session}>
           <Nav />
           <Breadcrumbs />
-          <NavAuth />
           <main>
             {children}
           </main>
