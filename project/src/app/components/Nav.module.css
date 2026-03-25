@@ -1,9 +1,10 @@
 .nav {
+  background: var(--tan);
+  border-bottom: var(--border);
+  padding: 13px 20px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0.75rem 2rem;
-  border-bottom: 1px solid #ccc;
   gap: 1rem;
 }
 
@@ -15,23 +16,28 @@
 }
 
 .navBrand {
-  font-size: 1.2rem;
-  font-weight: bold;
+  font-size: 1.25rem;
+  font-weight: 500;
+  font-style: italic;
+  color: var(--ink);
   text-decoration: none;
-  color: inherit;
+  letter-spacing: -0.5px;
 }
 
 .navLink {
-  font-size: 0.9rem;
+  font-size: 0.875rem;
+  color: var(--ink);
   text-decoration: none;
-  color: #444;
+  border: var(--border-thin);
+  border-radius: var(--radius-pill);
+  padding: 4px 12px;
 }
 
 .navLink:hover {
-  color: #000;
+  background: var(--ink);
+  color: var(--cream);
 }
 
-/* Search bar */
 .navSearch {
   display: flex;
   gap: 0.5rem;
@@ -41,27 +47,38 @@
 
 .navSearchInput {
   flex: 1;
-  padding: 0.4rem 0.75rem;
-  font-size: 0.9rem;
-  border: 1px solid #ccc;
+  padding: 6px 12px;
+  font-size: 0.875rem;
+  border: 2px solid var(--ink);
+  border-radius: 6px;
+  background: var(--ink);
+  color: var(--cream);
+  box-shadow: var(--shadow-btn);
+}
+
+.navSearchInput::placeholder {
+  color: var(--muted);
 }
 
 .navSearchInput:focus {
-  outline: 2px solid #0070f3;
-  border-color: transparent;
+  outline: none;
+  box-shadow: 2px 2px 0 var(--muted);
 }
 
 .navSearchButton {
-  padding: 0.4rem 0.75rem;
-  font-size: 0.9rem;
+  padding: 6px 14px;
+  font-size: 0.875rem;
   cursor: pointer;
-  background: #0070f3;
-  color: white;
-  border: none;
+  background: var(--ink);
+  color: var(--cream);
+  border: 2px solid var(--ink);
+  border-radius: 6px;
+  box-shadow: var(--shadow-btn-sm);
 }
 
 .navSearchButton:hover {
-  background: #0060df;
+  background: var(--muted);
+  border-color: var(--muted);
 }
 
 .navRight {
@@ -72,23 +89,27 @@
 }
 
 .navUser {
-  font-size: 0.85rem;
-  color: #666;
+  font-size: 0.8rem;
+  color: var(--mid);
+  font-style: italic;
 }
 
 .navButton {
-  padding: 0.4rem 0.75rem;
-  font-size: 0.9rem;
+  padding: 5px 14px;
+  font-size: 0.875rem;
   cursor: pointer;
-  background: none;
-  border: 1px solid #ccc;
+  background: var(--ink);
+  color: var(--cream);
+  border: 2px solid var(--ink);
+  border-radius: var(--radius-pill);
+  box-shadow: var(--shadow-btn-sm);
 }
 
 .navButton:hover {
-  background: #f0f0f0;
+  background: var(--muted);
+  border-color: var(--muted);
 }
 
-/* For small screens */
 @media (max-width: 600px) {
   .nav {
     flex-wrap: wrap;
@@ -105,4 +126,11 @@
   .navLeft {
     flex: 1;
   }
+}
+
+.navUserMenu {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
 }

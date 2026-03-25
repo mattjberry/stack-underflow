@@ -91,6 +91,7 @@ async function handleDeleteChannel() {
 
   return (
     <div className={styles.container}>
+      <div className={styles.eyebrow}>Stack Underflow · Programming Q&amp;A</div>
       <div className={styles.header}>
         <h1 className={styles.title}>Channels</h1>
 
@@ -142,33 +143,34 @@ async function handleDeleteChannel() {
         </form>
       )}
 
-      <hr></hr>
-
       {/* Empty state */}
       {channels.length === 0 ? (
         <p className={styles.empty}>No channels found. Be the first to create one!</p>
       ) : (
         <ul className={styles.list}>
-          {channels.map((channel) => (
+          {channels.map((channel, index) => (
             <li key={channel.id} className={styles.card}>
-              <Link href={`/channels/${channel.name}`}>
-                <h2 className={styles.cardTitle}>{channel.name}</h2>
-              </Link>
-              <p className={styles.cardDescription}>{channel.description}</p>
-              
-              <div className={styles.cardFooter}>
-                <p className={styles.cardMeta}>
-                  Created on {new Date(channel.created_at).toLocaleDateString()}
-                  -{" "}
-                  {channel.post_count} posts
-                </p>
-                {status === "authenticated" && session?.user.role === "admin" && (
-                  <button
-                    className={styles.deleteButton}
-                    onClick={() => setPendingDelete(channel)}>
-                    Delete Channel
-                  </button>
-                )}
+              <div className={styles.cardIndex}>{index + 1}</div>
+              <div className={styles.cardBody}>
+                <Link href={`/channels/${channel.name}`}>
+                  <h2 className={styles.cardTitle}>{channel.name}</h2>
+                </Link>
+                <p className={styles.cardDescription}>{channel.description}</p>
+                
+                <div className={styles.cardFooter}>
+                  <p className={styles.cardMeta}>
+                    Created on {new Date(channel.created_at).toLocaleDateString()}
+                    -{" "}
+                    {channel.post_count} posts
+                  </p>
+                  {status === "authenticated" && session?.user.role === "admin" && (
+                    <button
+                      className={styles.deleteButton}
+                      onClick={() => setPendingDelete(channel)}>
+                      Delete Channel
+                    </button>
+                  )}
+                </div>
               </div>
             </li>
           ))}

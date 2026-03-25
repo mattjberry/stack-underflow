@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
+// Segments that exist in the URL but have no real page
+const SKIP_SEGMENTS = new Set(["posts", "replies"]);
 
 // Adds breadcrumbs style navigation to the top of each page
 // ie. Home > Channels > Channel_Name > Post...
@@ -13,10 +15,13 @@ export default function Breadcrumbs() {
   // Don't render on homepage
   if (segments.length === 0) return null;
 
-  const crumbs = segments.map((segment, index) => {
-    const href = "/" + segments.slice(0, index + 1).join("/");
-    const label = segment.charAt(0).toUpperCase() + segment.slice(1);
-    const isLast = index === segments.length - 1;
+  const crumbs = segments
+    .filter((segment) => !SKIP_SEGMENTS.has(segment.toLowerCase()))
+    .map((segment, index, filtered) => {
+      const originalIndex = segments.indexOf(segment);
+      const href = "/" + segments.slice(0, originalIndex + 1).join("/");
+      const label = segment.charAt(0).toUpperCase() + segment.slice(1);
+      const isLast = index === filtered.length - 1;
 
     return { href, label, isLast };
   });

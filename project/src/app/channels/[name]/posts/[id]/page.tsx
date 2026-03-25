@@ -9,6 +9,7 @@ import { useSession } from "next-auth/react";
 import ConfirmDialog from "@/components/ConfirmDialog";
 import { useRouter } from "next/navigation";
 import Spinner from "@/components/Spinner";
+import Image from "next/image";
 
 
 type PostDetail = Post & {
@@ -215,7 +216,15 @@ async function handleReplySubmit(e: React.SubmitEvent, parentReplyId: number | n
     }
 
     setPost((prev) =>
-      prev ? { ...prev, replies: [...prev.replies, data] } : prev
+      prev ? {
+        ...prev,
+        replies: [...prev.replies, {
+          ...data,
+          vote_score: 0,
+          user_vote: 0,
+          author_name: session?.user.name ?? "You",
+        }]
+      } : prev
     );
     setReplyBody("");
     setReplyFile(null);
@@ -284,155 +293,214 @@ function renderReplyForm(parentReplyId: number | null) {
   );
 }
 
-  function renderReplies(replies: Reply[], parentId: number | null = null, depth = 0) {
-    const filtered = replies.filter((r) => r.parent_reply_id === parentId);
-    if (filtered.length === 0) return null;
+function renderReplies(
+  replies: Reply[],
+  parentId: number | null = null,
+  depth = 0
+) {
+  const filtered = replies.filter((r) => r.parent_reply_id === parentId);
+  if (filtered.length === 0) return null;
+
+  // Use div for nested replies to avoid <li> inside <li>
+  const Tag = depth === 0 ? "li" : "div";
+
+  const items = filtered.map((reply) => {
+    const isReplyAuthor =
+      status === "authenticated" &&
+      parseInt(session!.user.id) === reply.author_id;
 
     return (
-      <ul className={styles.list} style={{ paddingLeft: depth > 0 ? "1.5rem" : "0" }}>
-        {filtered.map((reply) => {
-          const isReplyAuthor = status === "authenticated" && parseInt(session!.user.id) === reply.author_id;
-          return (
-          <li key={reply.id} className={styles.card}>
-            <p>{reply.body}</p>
-            <AttachmentImage
-              attachments={post!.attachments}
-              targetType="reply"
-              targetId={reply.id}
-            />
-            <div className={styles.cardMeta}>
-              {reply.author_name} · {new Date(reply.created_at).toLocaleDateString()}
-            </div>
-            <div className={styles.cardFooter}>
-              <div
-                className={`${styles.votes} ${(status !== "authenticated" || isReplyAuthor) ? styles.votesLocked : ""}`}
-                data-tooltip={isReplyAuthor ? "You cannot vote on your own content" : "Please sign in to vote"}
+      <Tag key={reply.id} className={styles.replyCard}>
+        <p className={styles.postCardBody}>{reply.body}</p>
+        <AttachmentImage
+          attachments={post!.attachments}
+          targetType="reply"
+          targetId={reply.id}
+        />
+        <div className={styles.postCardFooter}>
+          <div className={styles.postCardLeft}>
+            <p className={styles.cardMeta}>
+              {reply.author_name} ·{" "}
+              {new Date(reply.created_at).toLocaleDateString()}
+            </p>
+            <div
+              className={`${styles.votes} ${
+                status !== "authenticated" || isReplyAuthor
+                  ? styles.votesLocked : ""
+              }`}
+              data-tooltip={
+                isReplyAuthor
+                  ? "You cannot vote on your own content"
+                  : "Please sign in to vote"
+              }
+            >
+              <button
+                className={`${styles.voteButton} ${
+                  reply.user_vote === 1 ? styles.voteButtonActive : ""
+                }`}
+                disabled={status !== "authenticated" || isReplyAuthor}
+                onClick={() => handleVote("reply", reply.id, 1)}
               >
-                <button
-                  className={`${styles.voteButton} ${reply.user_vote === 1 ? styles.voteButtonActive : ""}`}
-                  disabled={status !== "authenticated" || !!isReplyAuthor}
-                  onClick={() => handleVote("reply", reply.id, 1)}
-                >
-                  👍
-                </button>
-                <span>{formatScore(reply.vote_score)}</span>
-                <button
-                  className={`${styles.voteButton} ${reply.user_vote === -1 ? styles.voteButtonActive : ""}`}
-                  disabled={status !== "authenticated" || !!isReplyAuthor}
-                  onClick={() => handleVote("reply", reply.id, -1)}
-                >
-                  👎
-                </button>
-              </div>
-              {status === "authenticated" ? (
-                <button
-                  className={styles.button}
-                  onClick={() => setReplyingTo(reply.id)}>
-                  Reply
-                </button>
-              ) : (
-                <p className={styles.authPrompt}>Please sign in to reply</p>
-              )}
-              {status === "authenticated" && session?.user.role === "admin" && (
-                <button
-                  className={styles.deleteButton}
-                  onClick={() => setPendingDeleteReply(reply)}
-                >
-                  Delete Reply
-                </button>
-              )}
+                <Image
+                  src="/thumbs-up.png"
+                  alt="Upvote"
+                  width={18}
+                  height={18}
+                /> 
+              </button>
+              <span>{formatScore(reply.vote_score)}</span>
+              <button
+                className={`${styles.voteButton} ${
+                  reply.user_vote === -1 ? styles.voteButtonActive : ""
+                }`}
+                disabled={status !== "authenticated" || isReplyAuthor}
+                onClick={() => handleVote("reply", reply.id, -1)}
+              >
+                <Image
+                  src="/thumbs-down.png"
+                  alt="Downvote"
+                  width={18}
+                  height={18}
+                /> 
+              </button>
             </div>
+          </div>
+          <div className={styles.postCardActions}>
+            {status === "authenticated" ? (
+              <button
+                className={styles.button}
+                onClick={() => setReplyingTo(reply.id)}
+              >
+                Reply
+              </button>
+            ) : (
+              <p className={styles.authPrompt}>Please sign in to reply</p>
+            )}
+            {status === "authenticated" && session?.user.role === "admin" && (
+              <button
+                className={styles.deleteButton}
+                onClick={() => setPendingDeleteReply(reply)}
+              >
+                Delete Reply
+              </button>
+            )}
+          </div>
+        </div>
 
-            {/* Reply form for this reply */}
-            {replyingTo === reply.id && renderReplyForm(reply.id)}
+        {replyingTo === reply.id && renderReplyForm(reply.id)}
 
-            {/* Nested replies */}
+        {replies.some((r) => r.parent_reply_id === reply.id) && (
+          <div className={styles.nestedReplies}>
             {renderReplies(replies, reply.id, depth + 1)}
-          </li>
-          );
-        })}
-      </ul>
+          </div>
+        )}
+      </Tag>
     );
-  }
+  });
+
+  return depth === 0 ? (
+    <ul className={styles.replyList}>{items}</ul>
+  ) : (
+    <>{items}</>
+  );
+}
 
   if (loading) return <Spinner message="Loading post..." />;
   if (error) return <p className={styles.error}>{error}</p>;
   if (!post) return <p className={styles.empty}>Post not found.</p>;
 
+  const isPostAuthor = status === "authenticated" &&
+    parseInt(session!.user.id) === post.author_id;
+
   return (
     <div className={styles.container}>
 
       {/* Main post card */}
-      <div className={styles.card}>
-        <h1 className={styles.cardTitle}>{post.title}</h1>
-        <p>{post.body}</p>
+      <div className={styles.postCard}>
+        <h1 className={styles.postCardTitle}>{post.title}</h1>
+        <p className={styles.postCardBody}>{post.body}</p>
         <AttachmentImage
           attachments={post.attachments}
           targetType="post"
           targetId={post.id}
         />
-        <p className={styles.cardMeta}>
-          Posted by {post.author_name} ·{" "}
-          {new Date(post.created_at).toLocaleDateString()}
-        </p>
-        <div className={styles.cardFooter}>
-          {(() => {
-            const isPostAuthor = status === "authenticated" && parseInt(session!.user.id) === post.author_id;
-            return (
-              <div
-                className={`${styles.votes} ${(status !== "authenticated" || isPostAuthor) ? styles.votesLocked : ""}`}
-                data-tooltip={isPostAuthor ? "You cannot vote on your own content" : "Please sign in to vote"}
-              >
-                <button
-                  className={`${styles.voteButton} ${post.user_vote === 1 ? styles.voteButtonActive : ""}`}
-                  disabled={status !== "authenticated" || !!isPostAuthor}
-                  onClick={() => handleVote("post", post.id, 1)}
-                >
-                  👍
-                </button>
-                <span>{formatScore(post.vote_score)}</span>
-                <button
-                  className={`${styles.voteButton} ${post.user_vote === -1 ? styles.voteButtonActive : ""}`}
-                  disabled={status !== "authenticated" || !!isPostAuthor}
-                  onClick={() => handleVote("post", post.id, -1)}
-                >
-                  👎
-                </button>
-              </div>
-            );
-          })()}
-          {status === "authenticated" ? (
-            <button
-              className={styles.button}
-              onClick={() => setReplyingTo(null)}
+        <div className={styles.postCardFooter}>
+          <div className={styles.postCardLeft}>
+            <p className={styles.cardMeta}>
+              Posted by {post.author_name} ·{" "}
+              {new Date(post.created_at).toLocaleDateString()}
+            </p>
+            <div
+              className={`${styles.votes} ${
+                status !== "authenticated" || isPostAuthor ? styles.votesLocked : ""
+              }`}
+              data-tooltip={
+                isPostAuthor
+                  ? "You cannot vote on your own content"
+                  : "Please sign in to vote"
+              }
             >
-              Reply
-            </button>
-          ) : (
-            <p className={styles.authPrompt}>Please sign in to reply</p>
-          )}
-          {status === "authenticated" && session?.user.role === "admin" && (
-            <button
-              className={styles.deleteButton}
-              onClick={() => setPendingDeletePost(true)}>
-              Delete Post
-            </button>
-          )}
+              <button
+                className={`${styles.voteButton} ${
+                  post.user_vote === 1 ? styles.voteButtonActive : ""
+                }`}
+                disabled={status !== "authenticated" || isPostAuthor}
+                onClick={() => handleVote("post", post.id, 1)}
+              >
+                <Image
+                  src="/thumbs-up.png"
+                  alt="Upvote"
+                  width={18}
+                  height={18}
+                /> 
+              </button>
+              <span>{formatScore(post.vote_score)}</span>
+              <button
+                className={`${styles.voteButton} ${
+                  post.user_vote === -1 ? styles.voteButtonActive : ""
+                }`}
+                disabled={status !== "authenticated" || isPostAuthor}
+                onClick={() => handleVote("post", post.id, -1)}
+              >
+                <Image
+                  src="/thumbs-down.png"
+                  alt="Downvote"
+                  width={18}
+                  height={18}
+                /> 
+              </button>
+            </div>
+          </div>
+          <div className={styles.postCardActions}>
+            {status === "authenticated" ? (
+              <button
+                className={styles.button}
+                onClick={() => setReplyingTo(null)}
+              >
+                Reply
+              </button>
+            ) : (
+              <p className={styles.authPrompt}>Please sign in to reply</p>
+            )}
+            {status === "authenticated" && session?.user.role === "admin" && (
+              <button
+                className={styles.deleteButton}
+                onClick={() => setPendingDeletePost(true)}
+              >
+                Delete Post
+              </button>
+            )}
+          </div>
         </div>
-
-        {/* Reply form for main post */}
         {replyingTo === null && renderReplyForm(null)}
       </div>
 
-      {/* Replies section */}
       <h2 className={styles.title}>
         Replies ({post.replies.length})
       </h2>
 
       {post.replies.length === 0 ? (
-        <p className={styles.empty}>
-          No replies yet. Be the first to respond!
-        </p>
+        <p className={styles.empty}>No replies yet. Be the first to respond!</p>
       ) : (
         renderReplies(post.replies)
       )}
@@ -445,7 +513,6 @@ function renderReplyForm(parentReplyId: number | null) {
           onCancel={() => setPendingDeletePost(false)}
         />
       )}
-
       {pendingDeleteReply && (
         <ConfirmDialog
           message="Delete this reply?"

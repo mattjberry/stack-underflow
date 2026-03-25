@@ -41,20 +41,24 @@ export default function Nav() {
       <div className={styles.navRight}>
         {session ? (
           <>
-            <span className={styles.navUser}>
-              Signed in as {session.user.name}
-            </span>
-            {session.user.role === "admin" && (
-              <Link href="/admin" className={styles.navLink}>Admin Panel</Link>
-            )}
-            <form onSubmit={async (e) => {
-              e.preventDefault();
-              await signOut({ callbackUrl: "/" });
-            }}>
-              <button type="submit" className={styles.navButton}>
-                Sign Out
-              </button>
-            </form>
+            <div className={styles.navUserMenu}>
+              <span className={styles.navUser}>
+                Signed in as {session.user.name}
+              </span>
+              {session.user.role === "admin" && (
+                <Link href="/admin" className={styles.navLink}>
+                  Admin Panel
+                </Link>
+              )}
+              <form onSubmit={async (e) => {
+                e.preventDefault();
+                await signOut({ callbackUrl: "/" });
+              }}>
+                <button type="submit" className={styles.navButton}>
+                  Sign Out
+                </button>
+              </form>
+            </div>
           </>
         ) : (
           <>
