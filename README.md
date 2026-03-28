@@ -1,6 +1,6 @@
 # Stack Underflow
 
-Stack Underflow is a fully functional forum site allowing users to create accounts, channels, posts and replies, including upvotes, downvotes and image uploads. Functionally a clone of Stack Overflow created as project for CMPT353 Full Stack Development using Docker, Next.js, NextAuth.js and PostgreSQL.\
+Stack Underflow is a fully functional forum site allowing users to create accounts, channels, posts and replies, including upvotes, downvotes and image uploads. Functionally a clone of Stack Overflow created as project for CMPT353 Full Stack Development using Docker, Next.js, NextAuth.js and PostgreSQL.
 
 A small portion of the project was written with the assistance of Claude Code, to gain experience with modern AI assisted development tools. Affected code includes the voting buttons and their behaviours, limiting users to one vote per posts and toggling between upvotes and downvotes.
 
@@ -14,7 +14,8 @@ open a browser of your choice and visit https://localhost:3000
 
 ## Exposed Ports
 
-The main app is accessible through port 3000.\ The Postgres database runs on port 5432.
+The main app is accessible through port 3000.\
+The Postgres database runs on port 5432.
 
 ## Admin Access
 
