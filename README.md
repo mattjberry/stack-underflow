@@ -14,8 +14,8 @@ open a browser of your choice and visit https://localhost:3000
 
 ## Exposed Ports
 
-The main app is accessible through port 3000.\
-The Postgres database runs on port 5432.
+The Next.js app is accessible through port 3000.\
+The Postgres database runs on port 5432 and is accessible for direct database access.
 
 ## Admin Access
 
