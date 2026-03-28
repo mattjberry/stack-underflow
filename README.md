@@ -14,13 +14,13 @@ open a browser of your choice and visit https://localhost:3000
 
 ## Exposed Ports
 
-The main app is accessible through port 3000. The Postgres database runs on port 5432.
+The main app is accessible through port 3000.\ The Postgres database runs on port 5432.
 
 ## Admin Access
 
 The seeded admin account is accessible using the following credentials:\
 **username:** admin\
-**password:** yourpassword\
+**password:** yourpassword
 
 With admin access, you know have permissions to delete channels, posts and replies. Deleting a channel will also all posts within it, and deleting a post/reply will delete all of the replies. delete Using the admin panel, you can also delete specific users. Content created by a user that is deleted will remain in the database and be displayed with the name omitted.
 
