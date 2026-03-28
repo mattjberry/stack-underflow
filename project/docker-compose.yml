@@ -8,12 +8,9 @@ services:
       postgres:
         condition: service_healthy
     env_file:
-      - .env.example
+      - .env
     environment:
-      NODE_ENV: development
       DATABASE_URL: postgresql://admin:admin@postgres:5432/proj
-      NEXTAUTH_SECRET: l7W4WWeY0xDjR5rRpH4+26OBuZRXIHmvCq9XUdTGUzA=
-      NEXTAUTH_URL: http://localhost:3000
     volumes:
       - uploads:/app/uploads
 
