@@ -8,9 +8,12 @@ A small portion of the project was written with the assistance of Claude Code, t
 ## Start-up Instructions
 
 Clone the repository and navigate to the project/ directory.\
+Copy the ```.env.example``` file into a ```.env``` file.\
+Replace the ```NEXTAUTH_SECRET``` with a new code generated with:\
+```openssl rand -base64 32```\
 With the Docker deamon running, run docker compose up.\
 Once all containers have started (may take about 30 seconds)\
-open a browser of your choice and visit https://localhost:3000
+open a browser of your choice and visit ```https://localhost:3000```
 
 ## Exposed Ports
 
