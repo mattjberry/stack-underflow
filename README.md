@@ -33,3 +33,4 @@ With admin access, you know have permissions to delete channels, posts and repli
 Seed data including three sample users, one admin account, three channels and several posts and replies is loaded by default when the program starts. This can be disabled by removing 02_seed.sql from the list of volumes in the Docker compose file. Note that doing so will change the behaviour of deleted users: on posts that they have created, the name associated with the post will be blank instead of defaulting to a 'deleted user'.
 
 ## Demo Video
+https://youtu.be/bOgayqPc41A
